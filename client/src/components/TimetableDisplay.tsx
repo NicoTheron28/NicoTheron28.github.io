@@ -24,20 +24,26 @@ export function TimetableDisplay({ startTime }: TimetableDisplayProps) {
     const calculateTimetable = (startStr: string): { slots: TimeSlot[], periodLength: string } => {
       const [h, m] = startStr.split(':').map(Number);
       const startSeconds = h * 3600 + m * 60;
-      const endSeconds = 13 * 3600 + 50 * 60; // 13:50
+      const endSeconds = 13 * 3600 + 50 * 60; // 13:50:00
       
       const WALK = 4 * 60;
       const BREAK = 30 * 60;
       
-      // Total duration from Start to 13:50
-      const totalDuration = endSeconds - startSeconds;
+      // According to the example provided:
+      // Total gaps: 
+      // 1. Start -> Walk -> P1
+      // 2. P1 -> Walk -> P2
+      // 3. P2 -> Walk -> P3
+      // 4. P3 -> Walk -> P4
+      // 5. P4 -> Pouse (0 walk)
+      // 6. Pouse -> Walk -> P5
+      // 7. P5 -> Walk -> P6
+      // 8. P6 -> Walk -> P7
+      // 9. P7 -> Walk -> P8
       
-      // Deductions: 
-      // 1 initial walk (before P1)
-      // 6 walking gaps (P1-P2, P2-P3, P3-P4, P5-P6, P6-P7, P7-P8)
-      // 1 break (30 mins)
-      const totalDeductions = (7 * WALK) + BREAK;
-      const totalClassTime = totalDuration - totalDeductions;
+      // Total walking gaps = 8 (Start-P1, P1-P2, P2-P3, P3-P4, Pouse-P5, P5-P6, P6-P7, P7-P8)
+      const totalDeductions = (8 * WALK) + BREAK;
+      const totalClassTime = endSeconds - startSeconds - totalDeductions;
       
       // 8 Periods
       const periodLengthSeconds = totalClassTime / 8;
@@ -60,26 +66,27 @@ export function TimetableDisplay({ startTime }: TimetableDisplayProps) {
         const pEnd = pStart + periodLengthSeconds;
         slots.push({
           period: `Tydperk ${i}`,
-          start: formatTime(pStart),
-          end: formatTime(pEnd),
+          start: formatTime(Math.round(pStart)),
+          end: formatTime(Math.round(pEnd)),
         });
         currentSeconds = pEnd;
-        if (i < 4) currentSeconds += WALK;
+        if (i < 4) {
+          currentSeconds += WALK;
+        }
       }
 
-      // Period 4 -> Break (No walk)
+      // Pouse (No walk before)
       const breakStart = currentSeconds;
       const breakEnd = breakStart + BREAK;
       slots.push({
         period: "Pouse",
-        start: formatTime(breakStart),
-        end: formatTime(breakEnd),
+        start: formatTime(Math.round(breakStart)),
+        end: formatTime(Math.round(breakEnd)),
         isBreak: true
       });
       currentSeconds = breakEnd;
 
-      // Break -> P5 (Assume walk happens here to align with "except before break")
-      // If walk is NOT before break, it must be everywhere else including after break.
+      // Pouse -> Walk -> P5
       currentSeconds += WALK;
       
       // Periods 5-8
@@ -88,19 +95,22 @@ export function TimetableDisplay({ startTime }: TimetableDisplayProps) {
         const pEnd = pStart + periodLengthSeconds;
         slots.push({
           period: `Tydperk ${i}`,
-          start: formatTime(pStart),
-          end: i === 8 ? "13:50" : formatTime(pEnd),
+          start: formatTime(Math.round(pStart)),
+          end: i === 8 ? "13:50" : formatTime(Math.round(pEnd)),
         });
         currentSeconds = pEnd;
-        if (i < 8) currentSeconds += WALK;
+        if (i < 8) {
+          currentSeconds += WALK;
+        }
       }
 
-      const minutes = Math.floor(periodLengthSeconds / 60);
-      const seconds = Math.floor(periodLengthSeconds % 60);
+      const totalPeriodSecs = Math.round(periodLengthSeconds);
+      const min = Math.floor(totalPeriodSecs / 60);
+      const sec = totalPeriodSecs % 60;
       
       return { 
         slots, 
-        periodLength: `${minutes} min${seconds > 0 ? ` ${seconds}s` : ''}` 
+        periodLength: `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}` 
       };
     };
 
