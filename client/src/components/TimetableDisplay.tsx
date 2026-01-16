@@ -65,7 +65,7 @@ export function TimetableDisplay({ startTime }: TimetableDisplayProps) {
         const pStart = currentSeconds;
         const pEnd = pStart + periodLengthSeconds;
         slots.push({
-          period: `Tydperk ${i}`,
+          period: `Periode ${i}`,
           start: formatTime(Math.round(pStart)),
           end: formatTime(Math.round(pEnd)),
         });
@@ -94,7 +94,7 @@ export function TimetableDisplay({ startTime }: TimetableDisplayProps) {
         const pStart = currentSeconds;
         const pEnd = pStart + periodLengthSeconds;
         slots.push({
-          period: `Tydperk ${i}`,
+          period: `Periode ${i}`,
           start: formatTime(Math.round(pStart)),
           end: i === 8 ? "13:50" : formatTime(Math.round(pEnd)),
         });
@@ -186,50 +186,50 @@ export function TimetableDisplay({ startTime }: TimetableDisplayProps) {
 
       <div 
         ref={cardRef}
-        className="bg-white p-6 md:p-8 rounded-3xl shadow-2xl border border-border relative overflow-hidden"
+        className="bg-white p-4 md:p-6 rounded-3xl shadow-2xl border border-border relative overflow-hidden"
       >
         {/* Decorative Background Elements */}
         <div className="absolute -top-20 -right-20 w-40 h-40 bg-secondary/10 rounded-full blur-3xl" />
         <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-primary/5 rounded-full blur-3xl" />
 
         <div className="relative z-10">
-          <div className="flex flex-col items-center mb-6">
-            <img src={badgeUrl} alt="Wesvalia Badge" className="w-16 h-16 object-contain mb-3 drop-shadow-md" />
-            <h2 className="text-2xl font-bold text-primary font-display">Wesvalia Kloktye</h2>
-            <p className="text-muted-foreground text-sm mt-1">Begin Tyd: {startTime}</p>
+          <div className="flex flex-col items-center mb-4">
+            <img src={badgeUrl} alt="Wesvalia Badge" className="w-12 h-12 object-contain mb-2 drop-shadow-md" />
+            <h2 className="text-xl font-bold text-primary font-display">Wesvalia Kloktye</h2>
+            <p className="text-muted-foreground text-[10px] mt-0.5">Begin Tyd: {startTime}</p>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-1.5">
             {slots.map((slot, idx) => (
               <motion.div 
                 key={idx}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: idx * 0.05 }}
-                className={`flex justify-between items-center p-3 rounded-xl border ${
+                className={`flex justify-between items-center p-2 rounded-lg border ${
                   slot.isBreak 
                     ? "bg-secondary/20 border-secondary/30" 
                     : "bg-white border-border/50 hover:border-primary/20"
                 }`}
               >
-                <span className={`font-medium ${slot.isBreak ? "text-secondary-foreground font-bold" : "text-foreground"}`}>
+                <span className={`text-sm font-medium ${slot.isBreak ? "text-secondary-foreground font-bold" : "text-foreground"}`}>
                   {slot.period}
                 </span>
-                <div className="font-mono text-sm font-semibold text-primary/80 bg-primary/5 px-2 py-1 rounded-md">
+                <div className="font-mono text-xs font-semibold text-primary/80 bg-primary/5 px-1.5 py-0.5 rounded">
                   {slot.start} - {slot.end}
                 </div>
               </motion.div>
             ))}
           </div>
 
-          <div className="mt-6 pt-4 border-t border-dashed border-border flex justify-center">
-            <p className="text-sm font-medium text-muted-foreground">
+          <div className="mt-4 pt-3 border-t border-dashed border-border flex justify-center">
+            <p className="text-xs font-medium text-muted-foreground">
               Klaslengte: <span className="text-primary">{periodLength}</span>
             </p>
           </div>
           
-          <div className="mt-8 text-center">
-            <p className="text-[10px] text-muted-foreground uppercase tracking-widest opacity-50">Wesvalia Hoërskool</p>
+          <div className="mt-4 text-center">
+            <p className="text-[8px] text-muted-foreground uppercase tracking-widest opacity-50">Wesvalia Hoërskool</p>
           </div>
         </div>
       </div>
