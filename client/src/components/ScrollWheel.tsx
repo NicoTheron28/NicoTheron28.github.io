@@ -13,7 +13,7 @@ export function ScrollWheel({ items, onChange, initialValue, label }: ScrollWhee
   const [emblaRef, emblaApi] = useEmblaCarousel({ 
     loop: true, 
     axis: 'y',
-    dragFree: true,
+    dragFree: false,
     containScroll: 'trimSnaps'
   });
   

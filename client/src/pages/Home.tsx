@@ -21,26 +21,12 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background font-body overflow-x-hidden">
       {/* SECTION 1: HERO */}
-      <section className="h-screen flex flex-col items-center justify-between py-12 px-4 relative">
-        {/* Header Badge */}
-        <motion.div 
-          initial={{ opacity: 0, y: -50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="mt-8 md:mt-12"
-        >
-          <img 
-            src={badgeUrl} 
-            alt="Wesvalia Badge" 
-            className="w-32 h-32 md:w-40 md:h-40 object-contain drop-shadow-2xl"
-          />
-        </motion.div>
-
+      <section className="h-screen flex flex-col items-center justify-center py-12 px-4 relative">
         {/* Main Title */}
         <motion.div 
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
+          transition={{ duration: 0.8 }}
           className="text-center space-y-4"
         >
           <h1 className="text-5xl md:text-7xl font-display font-bold text-primary tracking-tight">
