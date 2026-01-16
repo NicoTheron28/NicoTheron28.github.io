@@ -71,29 +71,14 @@ export function ScrollWheel({ items, onChange, initialValue, label }: ScrollWhee
 }
 
 export function TimePicker({ onTimeChange, initialTime = "07:30" }: { onTimeChange: (time: string) => void, initialTime?: string }) {
-  const hours = Array.from({ length: 6 }, (_, i) => String(i + 5).padStart(2, '0')); // 05 to 10 am
-  const minutes = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
-
-  const [initialH, initialM] = initialTime.split(':');
-  const [h, setH] = useState(initialH);
-  const [m, setM] = useState(initialM);
-
-  useEffect(() => {
-    onTimeChange(`${h}:${m}`);
-  }, [h, m, onTimeChange]);
-
   return (
     <div className="flex gap-4 items-center justify-center p-6 bg-white rounded-2xl shadow-xl border border-primary/10">
-      <ScrollWheel 
-        items={hours} 
-        onChange={setH} 
-        initialValue={initialH} 
-      />
-      <span className="text-2xl font-bold text-primary pb-2">:</span>
-      <ScrollWheel 
-        items={minutes} 
-        onChange={setM} 
-        initialValue={initialM} 
+      <input
+        type="time"
+        defaultValue={initialTime}
+        onChange={(e) => onTimeChange(e.target.value)}
+        className="text-3xl font-bold text-primary bg-transparent border-none focus:ring-0 cursor-pointer appearance-none"
+        style={{ colorScheme: 'light' }}
       />
     </div>
   );
