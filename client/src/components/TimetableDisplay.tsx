@@ -20,119 +20,89 @@ export function TimetableDisplay({ startTime }: TimetableDisplayProps) {
   const { toast } = useToast();
   const cardRef = useRef<HTMLDivElement>(null);
 
-  // Calculation Logic
-  const calculateTimetable = (startStr: string): { slots: TimeSlot[], periodLength: string } => {
-    const [h, m] = startStr.split(':').map(Number);
-    const startSeconds = h * 3600 + m * 60;
-    const endSeconds = 13 * 3600 + 50 * 60; // 13:50
-    
-    // Constants (in seconds)
-    const WALK = 4 * 60;
-    const BREAK = 30 * 60;
-    
-    // Timeline logic:
-    // Start -> Walk(4m) -> P1
-    // Walk gaps between: P1-P2, P2-P3, P3-P4, P5-P6, P6-P7, P7-P8 (6 gaps)
-    // Break gap: P4-Break (0 walk implied by "except before break"? Let's stick to prompt literal)
-    // Let's assume standard walk time of 4 mins is deducted 1 (start) + 6 (inter-class) = 7 times.
-    // Total Walk Time = 7 * 4 = 28 mins.
-    // Total Break = 30 mins.
-    // Total Deductions = 58 mins.
-    
-    const totalDuration = endSeconds - startSeconds;
-    const totalDeductions = (28 * 60) + BREAK;
-    const totalClassTime = totalDuration - totalDeductions;
-    
-    // 8 Periods
-    const periodLengthSeconds = totalClassTime / 8;
-    
-    // Helper to format seconds to HH:mm
-    const formatTime = (secs: number) => {
-      const d = new Date(0, 0, 0, 0, 0, 0);
-      d.setSeconds(secs);
-      return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
-    };
-
-    const slots: TimeSlot[] = [];
-    let currentSeconds = startSeconds;
-
-    // Initial walk
-    currentSeconds += WALK; 
-
-    // Periods 1-4
-    for (let i = 1; i <= 4; i++) {
-      const pStart = currentSeconds;
-      const pEnd = pStart + periodLengthSeconds;
+    // Calculation Logic
+    const calculateTimetable = (startStr: string): { slots: TimeSlot[], periodLength: string } => {
+      const [h, m] = startStr.split(':').map(Number);
+      const startSeconds = h * 3600 + m * 60;
+      const endSeconds = 13 * 3600 + 50 * 60; // 13:50
       
-      slots.push({
-        period: `Tydperk ${i}`,
-        start: formatTime(pStart),
-        end: formatTime(pEnd),
-        isBreak: false
-      });
+      const WALK = 4 * 60;
+      const BREAK = 30 * 60;
       
-      currentSeconds = pEnd;
-      // Add walk if not last period before break
-      if (i < 4) {
-        currentSeconds += WALK;
+      // Total duration from Start to 13:50
+      const totalDuration = endSeconds - startSeconds;
+      
+      // Deductions: 
+      // 1 initial walk (before P1)
+      // 6 walking gaps (P1-P2, P2-P3, P3-P4, P5-P6, P6-P7, P7-P8)
+      // 1 break (30 mins)
+      const totalDeductions = (7 * WALK) + BREAK;
+      const totalClassTime = totalDuration - totalDeductions;
+      
+      // 8 Periods
+      const periodLengthSeconds = totalClassTime / 8;
+      
+      const formatTime = (secs: number) => {
+        const h = Math.floor(secs / 3600);
+        const m = Math.floor((secs % 3600) / 60);
+        return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+      };
+
+      const slots: TimeSlot[] = [];
+      let currentSeconds = startSeconds;
+
+      // Start -> Walk -> P1
+      currentSeconds += WALK;
+
+      // Periods 1-4
+      for (let i = 1; i <= 4; i++) {
+        const pStart = currentSeconds;
+        const pEnd = pStart + periodLengthSeconds;
+        slots.push({
+          period: `Tydperk ${i}`,
+          start: formatTime(pStart),
+          end: formatTime(pEnd),
+        });
+        currentSeconds = pEnd;
+        if (i < 4) currentSeconds += WALK;
       }
-    }
 
-    // Break
-    const breakStart = currentSeconds;
-    const breakEnd = breakStart + BREAK;
-    slots.push({
-      period: "Pouse",
-      start: formatTime(breakStart),
-      end: formatTime(breakEnd),
-      isBreak: true
-    });
-    currentSeconds = breakEnd;
-    
-    // Note: Prompt said "except before break". 
-    // Usually there's a walk AFTER break to get to class?
-    // Let's assume standard school logic where you need to get to class P5.
-    // Logic above counted 6 inter-class walks.
-    // P1->P2, P2->P3, P3->P4 (3 walks)
-    // Break
-    // P5->P6, P6->P7, P7->P8 (3 walks)
-    // Wait, we need to get TO P5. Is there a walk time?
-    // If our calc assumes 6 walks + 1 initial, that's 7 walks.
-    // Initial, P1-P2, P2-P3, P3-P4, P5-P6, P6-P7, P7-P8. 
-    // That leaves P4->Break and Break->P5.
-    // Prompt says "4 mins walking time between classes (except before break)".
-    // So P4->P5 gap is the break. 
-    // If we assume NO walking time after break (just pure 30m break then class), my calculation holds.
-    // If there IS walking time after break, we'd need to subtract another 4 mins.
-    // Given "except before break" is the only exception mentioned, assume standard gaps elsewhere?
-    // Let's stick to the 28min total deduction derived earlier to be safe. It fits the "6 inter-class + 1 initial" model perfectly if Break->P5 is instantaneous or included in break.
-    
-    // Periods 5-8
-    for (let i = 5; i <= 8; i++) {
-      const pStart = currentSeconds;
-      const pEnd = pStart + periodLengthSeconds;
-      
+      // Period 4 -> Break (No walk)
+      const breakStart = currentSeconds;
+      const breakEnd = breakStart + BREAK;
       slots.push({
-        period: `Tydperk ${i}`,
-        start: formatTime(pStart),
-        end: i === 8 ? "13:50" : formatTime(pEnd), // Force exact end time
-        isBreak: false
+        period: "Pouse",
+        start: formatTime(breakStart),
+        end: formatTime(breakEnd),
+        isBreak: true
       });
-      
-      currentSeconds = pEnd;
-      if (i < 8) {
-        currentSeconds += WALK;
-      }
-    }
+      currentSeconds = breakEnd;
 
-    const minutes = Math.floor(periodLengthSeconds / 60);
-    const seconds = Math.floor(periodLengthSeconds % 60);
-    
-    return { 
-      slots, 
-      periodLength: `${minutes} min${seconds > 0 ? ` ${seconds}s` : ''}` 
+      // Break -> P5 (Assume walk happens here to align with "except before break")
+      // If walk is NOT before break, it must be everywhere else including after break.
+      currentSeconds += WALK;
+      
+      // Periods 5-8
+      for (let i = 5; i <= 8; i++) {
+        const pStart = currentSeconds;
+        const pEnd = pStart + periodLengthSeconds;
+        slots.push({
+          period: `Tydperk ${i}`,
+          start: formatTime(pStart),
+          end: i === 8 ? "13:50" : formatTime(pEnd),
+        });
+        currentSeconds = pEnd;
+        if (i < 8) currentSeconds += WALK;
+      }
+
+      const minutes = Math.floor(periodLengthSeconds / 60);
+      const seconds = Math.floor(periodLengthSeconds % 60);
+      
+      return { 
+        slots, 
+        periodLength: `${minutes} min${seconds > 0 ? ` ${seconds}s` : ''}` 
+      };
     };
-  };
 
   const { slots, periodLength } = calculateTimetable(startTime);
 
