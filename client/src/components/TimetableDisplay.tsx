@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Download, Share2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { useToast } from '@/hooks/use-toast';
-import badgeUrl from '@assets/Wesvalia_1_1768581137191.png';
+import badgeUrl from '@assets/Wesvalia_1-removebg-preview_1768752339288.png';
 
 interface TimetableDisplayProps {
   startTime: string;
