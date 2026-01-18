@@ -206,17 +206,21 @@ export function TimetableDisplay({ startTime }: TimetableDisplayProps) {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: idx * 0.05 }}
-                className={`flex justify-between items-center p-2 rounded-lg border ${
+                className={`flex justify-between items-center p-2 rounded-lg border w-full ${
                   slot.isBreak 
                     ? "bg-secondary/20 border-secondary/30" 
                     : "bg-white border-border/50 hover:border-primary/20"
                 }`}
               >
-                <span className={`text-sm font-medium ${slot.isBreak ? "text-secondary-foreground font-bold" : "text-foreground"}`}>
-                  {slot.period}
-                </span>
-                <div className="font-mono text-xs font-semibold text-primary/80 bg-primary/5 px-1.5 py-0.5 rounded">
-                  {slot.start} - {slot.end}
+                <div className="flex-1 flex justify-center">
+                  <span className={`text-sm font-medium ${slot.isBreak ? "text-secondary-foreground font-bold" : "text-foreground"}`}>
+                    {slot.period}
+                  </span>
+                </div>
+                <div className="flex-1 flex justify-center">
+                  <div className="font-mono text-xs font-semibold text-primary/80 bg-primary/5 px-1.5 py-0.5 rounded">
+                    {slot.start} - {slot.end}
+                  </div>
                 </div>
               </motion.div>
             ))}
