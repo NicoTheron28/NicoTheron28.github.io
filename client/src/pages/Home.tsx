@@ -1,13 +1,19 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Settings2, Minus, Plus } from 'lucide-react';
 import { TimePicker } from '@/components/ScrollWheel';
 import { TimetableDisplay } from '@/components/TimetableDisplay';
-import badgeUrl from '@assets/Wesvalia_1_1768581137191.png';
 
 export default function Home() {
   const [startTime, setStartTime] = useState("07:30");
   const [isCalculated, setIsCalculated] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  
+  // Advanced Settings State
+  const [pouseCount, setPouseCount] = useState(1);
+  const [pouseDuur, setPouseDuur] = useState(30);
+  const [eindTyd, setEindTyd] = useState("13:50");
+
   const calcSectionRef = useRef<HTMLDivElement>(null);
 
   const handleScrollDown = () => {
@@ -43,7 +49,7 @@ export default function Home() {
           animate={{ opacity: 1, y: [0, 10, 0] }}
           transition={{ duration: 2, repeat: Infinity, delay: 1 }}
           onClick={handleScrollDown}
-          className="cursor-pointer flex flex-col items-center gap-2 mb-8 text-muted-foreground hover:text-primary transition-colors"
+          className="cursor-pointer flex flex-col items-center gap-2 mb-8 text-muted-foreground hover:text-primary transition-colors absolute bottom-12"
         >
           <span className="text-xs uppercase tracking-widest font-medium">Begin</span>
           <ChevronDown className="w-6 h-6" />
@@ -68,18 +74,88 @@ export default function Home() {
                 key="input"
                 exit={{ opacity: 0, y: -50, scale: 0.95 }}
                 transition={{ duration: 0.4 }}
-                className="flex flex-col items-center gap-8"
+                className="flex flex-col items-center gap-6"
               >
                 <div className="text-center space-y-2">
                   <h2 className="text-2xl font-display font-semibold text-foreground">Kies Begin Tyd</h2>
                   <p className="text-muted-foreground">Kies hoe laat die skooldag begin het.</p>
                 </div>
 
-                <div className="py-8">
+                <div className="py-4">
                   <TimePicker 
                     initialTime={startTime} 
                     onTimeChange={setStartTime} 
                   />
+                </div>
+
+                {/* Advanced Settings Toggle */}
+                <div className="w-full">
+                  <button
+                    onClick={() => setShowAdvanced(!showAdvanced)}
+                    className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors mb-4 mx-auto"
+                  >
+                    <Settings2 className={`w-4 h-4 transition-transform duration-300 ${showAdvanced ? 'rotate-90' : ''}`} />
+                    Gevorderde Stellings
+                  </button>
+
+                  <AnimatePresence>
+                    {showAdvanced && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden bg-white rounded-2xl p-4 border border-border shadow-sm space-y-4 mb-6"
+                      >
+                        {/* Pouses Count */}
+                        <div className="space-y-2">
+                          <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Aantal Pouses</label>
+                          <div className="flex items-center justify-between bg-muted/50 rounded-lg p-1">
+                            <button 
+                              onClick={() => setPouseCount(Math.max(0, pouseCount - 1))}
+                              className="p-2 hover:bg-white rounded-md transition-colors"
+                            >
+                              <Minus className="w-4 h-4" />
+                            </button>
+                            <span className="font-display font-bold text-primary">{pouseCount}</span>
+                            <button 
+                              onClick={() => setPouseCount(Math.min(2, pouseCount + 1))}
+                              className="p-2 hover:bg-white rounded-md transition-colors"
+                            >
+                              <Plus className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Pouse Duur */}
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-end">
+                            <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Duur van Pouse</label>
+                            <span className="text-sm font-display font-bold text-primary">{pouseDuur} min</span>
+                          </div>
+                          <input 
+                            type="range" 
+                            min="15" 
+                            max="60" 
+                            step="5"
+                            value={pouseDuur}
+                            onChange={(e) => setPouseDuur(parseInt(e.target.value))}
+                            className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                          />
+                        </div>
+
+                        {/* Eindtyd */}
+                        <div className="space-y-2">
+                          <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Eintyd v Dag</label>
+                          <input 
+                            type="time"
+                            value={eindTyd}
+                            onChange={(e) => setEindTyd(e.target.value)}
+                            className="w-full bg-muted/50 rounded-lg p-2 font-mono text-center font-bold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                          />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 <button
@@ -102,10 +178,15 @@ export default function Home() {
                      onClick={() => setIsCalculated(false)}
                      className="text-sm text-muted-foreground hover:text-primary underline decoration-dotted underline-offset-4"
                    >
-                     Verander Tyd
+                     Verander Stellings
                    </button>
                  </div>
-                 <TimetableDisplay startTime={startTime} />
+                 <TimetableDisplay 
+                   startTime={startTime} 
+                   pouseCount={pouseCount}
+                   pouseDuur={pouseDuur}
+                   eindTyd={eindTyd}
+                 />
               </motion.div>
             )}
           </AnimatePresence>

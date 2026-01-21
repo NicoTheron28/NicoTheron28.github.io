@@ -7,6 +7,9 @@ import badgeUrl from '@assets/Wesvalia_1-removebg-preview_1768752339288.png';
 
 interface TimetableDisplayProps {
   startTime: string;
+  pouseCount?: number;
+  pouseDuur?: number;
+  eindTyd?: string;
 }
 
 interface TimeSlot {
@@ -16,7 +19,12 @@ interface TimeSlot {
   isBreak?: boolean;
 }
 
-export function TimetableDisplay({ startTime }: TimetableDisplayProps) {
+export function TimetableDisplay({ 
+  startTime, 
+  pouseCount = 1, 
+  pouseDuur = 30, 
+  eindTyd = "13:50" 
+}: TimetableDisplayProps) {
   const { toast } = useToast();
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -24,25 +32,22 @@ export function TimetableDisplay({ startTime }: TimetableDisplayProps) {
     const calculateTimetable = (startStr: string): { slots: TimeSlot[], periodLength: string } => {
       const [h, m] = startStr.split(':').map(Number);
       const startSeconds = h * 3600 + m * 60;
-      const endSeconds = 13 * 3600 + 50 * 60; // 13:50:00
+      
+      const [endH, endM] = eindTyd.split(':').map(Number);
+      const endSeconds = endH * 3600 + endM * 60;
       
       const WALK = 4 * 60;
-      const BREAK = 30 * 60;
+      const BREAK_DURATION = pouseDuur * 60;
       
-      // According to the example provided:
-      // Total gaps: 
-      // 1. Start -> Walk -> P1
-      // 2. P1 -> Walk -> P2
-      // 3. P2 -> Walk -> P3
-      // 4. P3 -> Walk -> P4
-      // 5. P4 -> Pouse (0 walk)
-      // 6. Pouse -> Walk -> P5
-      // 7. P5 -> Walk -> P6
-      // 8. P6 -> Walk -> P7
-      // 9. P7 -> Walk -> P8
+      // Total walking gaps:
+      // Always 8 walking gaps total (Start-P1, P1-P2, P2-P3, P3-P4, Pouse1-P5, P5-P6, P6-P7, P7-P8)
+      // Note: If 2 breaks, we distribute them. For now simple mapping:
+      // 0 breaks: all periods contiguous
+      // 1 break: after P4
+      // 2 breaks: after P3 and P6
       
-      // Total walking gaps = 8 (Start-P1, P1-P2, P2-P3, P3-P4, Pouse-P5, P5-P6, P6-P7, P7-P8)
-      const totalDeductions = (8 * WALK) + BREAK;
+      let breakDeductions = pouseCount * BREAK_DURATION;
+      const totalDeductions = (8 * WALK) + breakDeductions;
       const totalClassTime = endSeconds - startSeconds - totalDeductions;
       
       // 8 Periods
@@ -60,51 +65,44 @@ export function TimetableDisplay({ startTime }: TimetableDisplayProps) {
       // Start -> Walk -> P1
       currentSeconds += WALK;
 
-      // Periods 1-4
-      for (let i = 1; i <= 4; i++) {
+      const addBreak = () => {
+        const bStart = currentSeconds;
+        const bEnd = bStart + BREAK_DURATION;
+        slots.push({
+          period: "Pouse",
+          start: formatTime(Math.round(bStart)),
+          end: formatTime(Math.round(bEnd)),
+          isBreak: true
+        });
+        currentSeconds = bEnd;
+        currentSeconds += WALK; // Walk after break
+      };
+
+      for (let i = 1; i <= 8; i++) {
         const pStart = currentSeconds;
         const pEnd = pStart + periodLengthSeconds;
         slots.push({
           period: `Periode ${i}`,
           start: formatTime(Math.round(pStart)),
-          end: formatTime(Math.round(pEnd)),
+          end: i === 8 ? eindTyd : formatTime(Math.round(pEnd)),
         });
         currentSeconds = pEnd;
-        if (i < 4) {
+
+        // Break logic
+        if (pouseCount === 1 && i === 4) {
+          addBreak();
+        } else if (pouseCount === 2) {
+          if (i === 3 || i === 6) {
+            addBreak();
+          } else if (i < 8) {
+            currentSeconds += WALK;
+          }
+        } else if (i < 8) {
           currentSeconds += WALK;
         }
       }
 
-      // Pouse (No walk before)
-      const breakStart = currentSeconds;
-      const breakEnd = breakStart + BREAK;
-      slots.push({
-        period: "Pouse",
-        start: formatTime(Math.round(breakStart)),
-        end: formatTime(Math.round(breakEnd)),
-        isBreak: true
-      });
-      currentSeconds = breakEnd;
-
-      // Pouse -> Walk -> P5
-      currentSeconds += WALK;
-      
-      // Periods 5-8
-      for (let i = 5; i <= 8; i++) {
-        const pStart = currentSeconds;
-        const pEnd = pStart + periodLengthSeconds;
-        slots.push({
-          period: `Periode ${i}`,
-          start: formatTime(Math.round(pStart)),
-          end: i === 8 ? "13:50" : formatTime(Math.round(pEnd)),
-        });
-        currentSeconds = pEnd;
-        if (i < 8) {
-          currentSeconds += WALK;
-        }
-      }
-
-      const totalPeriodSecs = Math.round(periodLengthSeconds);
+      const totalPeriodSecs = Math.max(0, Math.round(periodLengthSeconds));
       const min = Math.floor(totalPeriodSecs / 60);
       const sec = totalPeriodSecs % 60;
       
@@ -207,7 +205,7 @@ export function TimetableDisplay({ startTime }: TimetableDisplayProps) {
           <div className="flex flex-col items-center mb-4">
             <img src={badgeUrl} alt="Wesvalia Badge" className="w-12 h-12 object-contain mb-2 drop-shadow-md" />
             <h2 className="text-xl font-bold text-primary font-display">Wesvalia Kloktye</h2>
-            <p className="text-muted-foreground text-[10px] mt-0.5">Begin Tyd: {startTime}</p>
+            <p className="text-muted-foreground text-[10px] mt-0.5">Begin: {startTime} | Klaar: {eindTyd}</p>
           </div>
 
           <div className="space-y-1.5">
