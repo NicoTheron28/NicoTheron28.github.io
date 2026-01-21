@@ -167,12 +167,14 @@ export default function Home() {
                         {/* Eindtyd */}
                         <div className="space-y-2">
                           <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Eintyd v Dag</label>
-                          <input 
-                            type="time"
-                            value={eindTyd}
-                            onChange={(e) => setEindTyd(e.target.value)}
-                            className="w-full bg-muted/50 rounded-lg p-2 font-mono text-center font-bold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                          />
+                          <div className="flex justify-center">
+                            <input 
+                              type="time"
+                              value={eindTyd}
+                              onChange={(e) => setEindTyd(e.target.value)}
+                              className="w-full max-w-[120px] bg-muted/50 rounded-lg p-2 font-mono text-center font-bold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                            />
+                          </div>
                         </div>
                       </motion.div>
                     )}
