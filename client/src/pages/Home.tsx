@@ -13,6 +13,7 @@ export default function Home() {
   const [pouseCount, setPouseCount] = useState(1);
   const [pouseDuur, setPouseDuur] = useState(30);
   const [eindTyd, setEindTyd] = useState("13:50");
+  const [periodCount, setPeriodCount] = useState(8);
 
   const calcSectionRef = useRef<HTMLDivElement>(null);
 
@@ -126,6 +127,26 @@ export default function Home() {
                           </div>
                         </div>
 
+                        {/* Period Count */}
+                        <div className="space-y-2">
+                          <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Aantal Periodes</label>
+                          <div className="flex items-center justify-between bg-muted/50 rounded-lg p-1">
+                            <button 
+                              onClick={() => setPeriodCount(Math.max(1, periodCount - 1))}
+                              className="p-2 hover:bg-white rounded-md transition-colors"
+                            >
+                              <Minus className="w-4 h-4" />
+                            </button>
+                            <span className="font-display font-bold text-primary">{periodCount}</span>
+                            <button 
+                              onClick={() => setPeriodCount(Math.min(12, periodCount + 1))}
+                              className="p-2 hover:bg-white rounded-md transition-colors"
+                            >
+                              <Plus className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+
                         {/* Pouse Duur */}
                         <div className="space-y-2">
                           <div className="flex justify-between items-end">
@@ -186,6 +207,7 @@ export default function Home() {
                    pouseCount={pouseCount}
                    pouseDuur={pouseDuur}
                    eindTyd={eindTyd}
+                   periodCount={periodCount}
                  />
               </motion.div>
             )}

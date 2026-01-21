@@ -10,6 +10,7 @@ interface TimetableDisplayProps {
   pouseCount?: number;
   pouseDuur?: number;
   eindTyd?: string;
+  periodCount?: number;
 }
 
 interface TimeSlot {
@@ -23,7 +24,8 @@ export function TimetableDisplay({
   startTime, 
   pouseCount = 1, 
   pouseDuur = 30, 
-  eindTyd = "13:50" 
+  eindTyd = "13:50",
+  periodCount = 8
 }: TimetableDisplayProps) {
   const { toast } = useToast();
   const cardRef = useRef<HTMLDivElement>(null);
@@ -47,11 +49,11 @@ export function TimetableDisplay({
       // 2 breaks: after P3 and P6
       
       let breakDeductions = pouseCount * BREAK_DURATION;
-      const totalDeductions = (8 * WALK) + breakDeductions;
+      const totalDeductions = (periodCount * WALK) + breakDeductions;
       const totalClassTime = endSeconds - startSeconds - totalDeductions;
       
-      // 8 Periods
-      const periodLengthSeconds = totalClassTime / 8;
+      // Dynamic Periods
+      const periodLengthSeconds = totalClassTime / periodCount;
       
       const formatTime = (secs: number) => {
         const h = Math.floor(secs / 3600);
@@ -78,26 +80,28 @@ export function TimetableDisplay({
         currentSeconds += WALK; // Walk after break
       };
 
-      for (let i = 1; i <= 8; i++) {
+      for (let i = 1; i <= periodCount; i++) {
         const pStart = currentSeconds;
         const pEnd = pStart + periodLengthSeconds;
         slots.push({
           period: `Periode ${i}`,
           start: formatTime(Math.round(pStart)),
-          end: i === 8 ? eindTyd : formatTime(Math.round(pEnd)),
+          end: i === periodCount ? eindTyd : formatTime(Math.round(pEnd)),
         });
         currentSeconds = pEnd;
 
         // Break logic
-        if (pouseCount === 1 && i === 4) {
+        if (pouseCount === 1 && i === Math.floor(periodCount / 2)) {
           addBreak();
         } else if (pouseCount === 2) {
-          if (i === 3 || i === 6) {
+          const firstBreak = Math.floor(periodCount / 3);
+          const secondBreak = Math.floor((periodCount * 2) / 3);
+          if (i === firstBreak || i === secondBreak) {
             addBreak();
-          } else if (i < 8) {
+          } else if (i < periodCount) {
             currentSeconds += WALK;
           }
-        } else if (i < 8) {
+        } else if (i < periodCount) {
           currentSeconds += WALK;
         }
       }
