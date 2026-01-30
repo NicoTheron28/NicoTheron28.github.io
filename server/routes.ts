@@ -33,7 +33,13 @@ export async function registerRoutes(
 
   app.post("/api/message", async (req, res) => {
     const { content, adminKey } = req.body;
-    if (adminKey !== process.env.SESSION_SECRET) {
+    console.log("Admin attempt with key:", adminKey);
+    console.log("Expected key (from env):", process.env.SESSION_SECRET);
+    
+    // Check if the provided key matches either the environment variable OR a fallback
+    const isAuthorized = adminKey === process.env.SESSION_SECRET || adminKey === "Chap@4472";
+    
+    if (!isAuthorized) {
       return res.status(401).send("Unauthorized");
     }
     const message = await storage.updateMessage(content);
