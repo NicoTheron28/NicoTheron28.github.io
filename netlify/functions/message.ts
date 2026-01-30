@@ -1,52 +1,64 @@
 import { Handler } from "@netlify/functions";
-import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
-import * as schema from "../../shared/schema";
-import { desc } from "drizzle-orm";
 
 const { Pool } = pg;
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const db = drizzle(pool, { schema });
+const pool = new Pool({ 
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
 
-export const handler: Handler = async (event, context) => {
-  if (event.httpMethod === "GET") {
-    try {
-      const [message] = await db.select().from(schema.messages).orderBy(desc(schema.messages.updatedAt)).limit(1);
-      return {
-        statusCode: 200,
-        body: JSON.stringify(message || { content: "" }),
-      };
-    } catch (err) {
-      return { statusCode: 500, body: JSON.stringify({ error: String(err) }) };
-    }
+export const handler: Handler = async (event) => {
+  const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  };
+
+  if (event.httpMethod === "OPTIONS") {
+    return { statusCode: 200, headers, body: "" };
   }
 
-  if (event.httpMethod === "POST") {
-    try {
+  const client = await pool.connect();
+  try {
+    if (event.httpMethod === "GET") {
+      const res = await client.query('SELECT * FROM messages ORDER BY updated_at DESC LIMIT 1');
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify(res.rows[0] || { content: "" }),
+      };
+    }
+
+    if (event.httpMethod === "POST") {
       const { content, adminKey } = JSON.parse(event.body || "{}");
-      
-      const isAuthorized = adminKey === process.env.SESSION_SECRET || adminKey === "Chap@4472" || adminKey === process.env.PASSWORD;
-      
+      const isAuthorized = adminKey === process.env.SESSION_SECRET || 
+                          adminKey === "Chap@4472" || 
+                          adminKey === process.env.PASSWORD;
+
       if (!isAuthorized) {
-        return { statusCode: 401, body: "Unauthorized" };
+        return { statusCode: 401, headers, body: JSON.stringify({ message: "Unauthorized" }) };
       }
-      
-      const [message] = await db.insert(schema.messages).values({
-        content,
-        updatedAt: new Date().toISOString()
-      }).returning();
+
+      const res = await client.query(
+        'INSERT INTO messages (content, updated_at) VALUES ($1, $2) RETURNING *',
+        [content, new Date().toISOString()]
+      );
 
       return {
         statusCode: 200,
-        body: JSON.stringify(message),
-      };
-    } catch (err) {
-      return {
-        statusCode: 500,
-        body: JSON.stringify({ message: "Internal Server Error", error: String(err) }),
+        headers,
+        body: JSON.stringify(res.rows[0]),
       };
     }
+  } catch (err) {
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ message: "Error", error: String(err) }),
+    };
+  } finally {
+    client.release();
   }
 
-  return { statusCode: 405, body: "Method Not Allowed" };
+  return { statusCode: 405, headers, body: "Method Not Allowed" };
 };

@@ -12,7 +12,10 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  const res = await fetch(url, {
+  // On Netlify, absolute URLs or relative to root can help
+  const fetchUrl = url.startsWith('/') ? url : `/${url}`;
+  
+  const res = await fetch(fetchUrl, {
     method,
     headers: data ? { "Content-Type": "application/json" } : {},
     body: data ? JSON.stringify(data) : undefined,
