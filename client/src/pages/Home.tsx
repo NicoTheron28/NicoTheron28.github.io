@@ -21,6 +21,21 @@ export default function Home() {
 
   const { data: motd } = useQuery<{ content: string }>({
     queryKey: ['/api/message'],
+    queryFn: async () => {
+      try {
+        const res = await fetch('/api/message');
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        // Sync to local storage for persistence on Netlify failures
+        if (data.content) {
+          localStorage.setItem('wesvalia_motd', JSON.stringify(data));
+        }
+        return data;
+      } catch (e) {
+        const local = localStorage.getItem('wesvalia_motd');
+        return local ? JSON.parse(local) : { content: "" };
+      }
+    }
   });
 
   const handleScrollDown = () => {

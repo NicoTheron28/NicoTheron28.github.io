@@ -23,8 +23,12 @@ export default function Admin() {
       const res = await apiRequest("POST", "/api/message", data);
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/message"] });
+      // Update local storage immediately for the admin
+      if (data && data.content) {
+        localStorage.setItem('wesvalia_motd', JSON.stringify(data));
+      }
       toast({
         title: "Sukses!",
         description: "Boodskap is opgedateer.",
