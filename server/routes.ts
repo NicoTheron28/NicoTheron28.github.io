@@ -40,7 +40,7 @@ export async function registerRoutes(
     const isAuthorized = adminKey === process.env.SESSION_SECRET || adminKey === "Chap@4472";
     
     if (!isAuthorized) {
-      return res.status(401).send("Unauthorized");
+      return res.status(401).json({ message: "Unauthorized" });
     }
     const message = await storage.updateMessage(content);
     res.json(message);
