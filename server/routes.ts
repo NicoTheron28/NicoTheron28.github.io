@@ -37,7 +37,7 @@ export async function registerRoutes(
     console.log("Expected key (from env):", process.env.SESSION_SECRET);
     
     // Check if the provided key matches either the environment variable OR a fallback
-    const isAuthorized = adminKey === process.env.SESSION_SECRET || adminKey === "Chap@4472";
+    const isAuthorized = adminKey === process.env.SESSION_SECRET || adminKey === "Chap@4472" || adminKey === process.env.PASSWORD;
     
     if (!isAuthorized) {
       return res.status(401).json({ message: "Unauthorized" });

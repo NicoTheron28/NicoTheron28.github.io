@@ -25,7 +25,7 @@ export const handler: Handler = async (event, context) => {
     try {
       const { content, adminKey } = JSON.parse(event.body || "{}");
       
-      const isAuthorized = adminKey === process.env.SESSION_SECRET || adminKey === "Chap@4472";
+      const isAuthorized = adminKey === process.env.SESSION_SECRET || adminKey === "Chap@4472" || adminKey === process.env.PASSWORD;
       
       if (!isAuthorized) {
         return { statusCode: 401, body: "Unauthorized" };
