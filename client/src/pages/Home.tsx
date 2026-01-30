@@ -1,8 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, Settings2, Minus, Plus } from 'lucide-react';
+import { ChevronDown, Settings2, Minus, Plus, Bell } from 'lucide-react';
 import { TimePicker } from '@/components/ScrollWheel';
 import { TimetableDisplay } from '@/components/TimetableDisplay';
+import { useQuery } from '@tanstack/react-query';
 
 export default function Home() {
   const [startTime, setStartTime] = useState("07:30");
@@ -14,8 +15,13 @@ export default function Home() {
   const [pouseDuur, setPouseDuur] = useState(30);
   const [eindTyd, setEindTyd] = useState("13:50");
   const [periodCount, setPeriodCount] = useState(8);
+  const [breakAfter, setBreakAfter] = useState(4); // Default break after period 4
 
   const calcSectionRef = useRef<HTMLDivElement>(null);
+
+  const { data: motd } = useQuery<{ content: string }>({
+    queryKey: ['/api/message'],
+  });
 
   const handleScrollDown = () => {
     calcSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -27,6 +33,20 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background font-body overflow-x-hidden">
+      {/* MOTD Banner */}
+      <AnimatePresence>
+        {motd?.content && (
+          <motion.div
+            initial={{ y: -50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="fixed top-0 left-0 right-0 z-[100] bg-primary text-primary-foreground py-2 px-4 shadow-md flex items-center justify-center gap-3"
+          >
+            <Bell className="w-4 h-4 text-gold animate-bounce" />
+            <p className="text-sm font-medium">{motd.content}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* SECTION 1: HERO */}
       <section className="h-screen flex flex-col items-center justify-center py-12 px-4 relative">
         {/* Main Title */}
@@ -132,7 +152,11 @@ export default function Home() {
                           <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Aantal Periodes</label>
                           <div className="flex items-center justify-between bg-muted/50 rounded-lg p-1">
                             <button 
-                              onClick={() => setPeriodCount(Math.max(1, periodCount - 1))}
+                              onClick={() => {
+                                const newCount = Math.max(1, periodCount - 1);
+                                setPeriodCount(newCount);
+                                if (breakAfter > newCount) setBreakAfter(newCount);
+                              }}
                               className="p-2 hover:bg-white rounded-md transition-colors"
                             >
                               <Minus className="w-4 h-4" />
@@ -146,6 +170,37 @@ export default function Home() {
                             </button>
                           </div>
                         </div>
+
+                        {/* Break Position - Animated Pop Up */}
+                        <AnimatePresence>
+                          {pouseCount > 0 && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              className="space-y-2 overflow-hidden"
+                            >
+                              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                                {pouseCount === 1 ? "Pouse na periode" : "Eerste pouse na periode"}
+                              </label>
+                              <div className="flex items-center justify-between bg-muted/50 rounded-lg p-1">
+                                <button 
+                                  onClick={() => setBreakAfter(Math.max(1, breakAfter - 1))}
+                                  className="p-2 hover:bg-white rounded-md transition-colors"
+                                >
+                                  <Minus className="w-4 h-4" />
+                                </button>
+                                <span className="font-display font-bold text-primary">{breakAfter}</span>
+                                <button 
+                                  onClick={() => setBreakAfter(Math.min(periodCount - 1, breakAfter + 1))}
+                                  className="p-2 hover:bg-white rounded-md transition-colors"
+                                >
+                                  <Plus className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
 
                         {/* Pouse Duur */}
                         <div className="space-y-2">
@@ -210,6 +265,7 @@ export default function Home() {
                    pouseDuur={pouseDuur}
                    eindTyd={eindTyd}
                    periodCount={periodCount}
+                   breakAfter={breakAfter}
                  />
               </motion.div>
             )}

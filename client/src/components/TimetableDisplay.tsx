@@ -11,6 +11,7 @@ interface TimetableDisplayProps {
   pouseDuur?: number;
   eindTyd?: string;
   periodCount?: number;
+  breakAfter?: number;
 }
 
 interface TimeSlot {
@@ -25,7 +26,8 @@ export function TimetableDisplay({
   pouseCount = 1, 
   pouseDuur = 30, 
   eindTyd = "13:50",
-  periodCount = 8
+  periodCount = 8,
+  breakAfter = 4
 }: TimetableDisplayProps) {
   const { toast } = useToast();
   const cardRef = useRef<HTMLDivElement>(null);
@@ -91,12 +93,13 @@ export function TimetableDisplay({
         currentSeconds = pEnd;
 
         // Break logic
-        if (pouseCount === 1 && i === Math.floor(periodCount / 2)) {
+        if (pouseCount === 1 && i === breakAfter) {
           addBreak();
         } else if (pouseCount === 2) {
-          const firstBreak = Math.floor(periodCount / 3);
-          const secondBreak = Math.floor((periodCount * 2) / 3);
-          if (i === firstBreak || i === secondBreak) {
+          // If 2 breaks, we use breakAfter for the first one, 
+          // and try to space the second one logically if not specified
+          const secondBreakAfter = Math.min(periodCount - 1, breakAfter + Math.floor((periodCount - breakAfter) / 2));
+          if (i === breakAfter || i === secondBreakAfter) {
             addBreak();
           } else if (i < periodCount) {
             currentSeconds += WALK;

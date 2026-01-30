@@ -26,5 +26,19 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/message", async (_req, res) => {
+    const message = await storage.getMessage();
+    res.json(message || { content: "" });
+  });
+
+  app.post("/api/message", async (req, res) => {
+    const { content, adminKey } = req.body;
+    if (adminKey !== process.env.SESSION_SECRET) {
+      return res.status(401).send("Unauthorized");
+    }
+    const message = await storage.updateMessage(content);
+    res.json(message);
+  });
+
   return httpServer;
 }
