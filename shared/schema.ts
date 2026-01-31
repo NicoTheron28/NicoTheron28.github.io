@@ -8,18 +8,27 @@ export const schedules = pgTable("schedules", {
   generatedAt: text("generated_at").notNull(),
 });
 
-export const insertScheduleSchema = createInsertSchema(schedules).omit({ id: true });
-
 export const messages = pgTable("messages", {
   id: serial("id").primaryKey(),
   content: text("content").notNull(),
   updatedAt: text("updated_at").notNull(),
 });
 
+export const schoolSettings = pgTable("school_settings", {
+  id: serial("id").primaryKey(),
+  currentDay: integer("current_day").notNull().default(1), // 1-6
+  updatedAt: text("updated_at").notNull(),
+});
+
+export const insertScheduleSchema = createInsertSchema(schedules).omit({ id: true });
 export const insertMessageSchema = createInsertSchema(messages).omit({ id: true });
+export const insertSettingsSchema = createInsertSchema(schoolSettings).omit({ id: true });
 
 export type Message = typeof messages.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 
 export type Schedule = typeof schedules.$inferSelect;
 export type InsertSchedule = z.infer<typeof insertScheduleSchema>;
+
+export type SchoolSettings = typeof schoolSettings.$inferSelect;
+export type InsertSchoolSettings = z.infer<typeof insertSettingsSchema>;

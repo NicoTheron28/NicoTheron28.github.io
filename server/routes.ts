@@ -31,6 +31,19 @@ export async function registerRoutes(
     res.json(message || { content: "" });
   });
 
+  app.get("/api/settings", async (_req, res) => {
+    const settings = await storage.getSettings();
+    res.json(settings);
+  });
+
+  app.post("/api/settings", async (req, res) => {
+    const { day, adminKey } = req.body;
+    const isAuthorized = adminKey === process.env.SESSION_SECRET || adminKey === "Chap@4472" || adminKey === process.env.PASSWORD;
+    if (!isAuthorized) return res.status(401).json({ message: "Unauthorized" });
+    const settings = await storage.updateSettings(day);
+    res.json(settings);
+  });
+
   app.post("/api/message", async (req, res) => {
     const { content, adminKey } = req.body;
     console.log("Admin attempt with key:", adminKey);
