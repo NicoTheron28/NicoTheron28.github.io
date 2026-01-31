@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { TimePicker } from "@/components/ScrollWheel";
 import { TimetableDisplay } from "@/components/TimetableDisplay";
-import { Banner } from "@/components/Banner";
 import { Settings2, BookOpen, ChevronDown, X, Eye, EyeOff, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";

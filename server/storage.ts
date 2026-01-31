@@ -33,15 +33,24 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getSettings(): Promise<SchoolSettings> {
-    const [settings] = await db.select().from(schoolSettings).limit(1);
-    if (!settings) {
-      const [newSettings] = await db.insert(schoolSettings).values({
+    try {
+      const [settings] = await db.select().from(schoolSettings).limit(1);
+      if (!settings) {
+        const [newSettings] = await db.insert(schoolSettings).values({
+          currentDay: 1,
+          updatedAt: new Date().toISOString()
+        }).returning();
+        return newSettings;
+      }
+      return settings;
+    } catch (err) {
+      console.error("Database settings fetch failed, using fallback:", err);
+      return {
+        id: 1,
         currentDay: 1,
         updatedAt: new Date().toISOString()
-      }).returning();
-      return newSettings;
+      };
     }
-    return settings;
   }
 
   async updateSettings(day: number): Promise<SchoolSettings> {
