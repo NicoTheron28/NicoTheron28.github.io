@@ -220,46 +220,42 @@ export function TimetableDisplay({
             <p className="text-muted-foreground text-[10px] mt-0.5">Begin: {startTime} | Klaar: {eindTyd}</p>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             {slots.map((slot, idx) => (
               <motion.div 
                 key={idx}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: idx * 0.05 }}
-                className={`flex flex-col p-2 rounded-lg border w-full ${
+                className={`flex flex-col p-1.5 rounded-lg border w-full leading-tight ${
                   slot.isBreak 
                     ? "bg-secondary/20 border-secondary/30" 
                     : "bg-white border-border/50 hover:border-primary/20"
                 }`}
               >
-                <div className="flex justify-between items-center w-full">
+                <div className="flex justify-between items-center w-full gap-2">
                   <div className="flex-1 text-left">
-                    <span className={`text-sm font-medium leading-none ${slot.isBreak ? "text-secondary-foreground font-bold" : "text-foreground"}`}>
+                    <span className={`text-[13px] font-bold leading-none ${slot.isBreak ? "text-secondary-foreground" : "text-foreground"}`}>
                       {slot.period}
                     </span>
                   </div>
-                  <div className="flex-1 flex justify-end">
-                    <div className="font-mono text-[10px] font-semibold text-primary/80 bg-primary/5 px-1.5 py-1 rounded leading-none">
+                  <div className="flex-shrink-0">
+                    <div className="font-mono text-[10px] font-bold text-primary/90 bg-primary/5 px-1 py-0.5 rounded leading-none">
                       {slot.start} - {slot.end}
                     </div>
                   </div>
                 </div>
 
                 {!slot.isBreak && slot.subjectData?.subject && (
-                  <motion.div 
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    className="mt-2 pt-2 border-t border-border/30 flex flex-col gap-0.5"
-                  >
-                    <div className="text-xs font-bold text-primary truncate">
+                  <div className="mt-1 pt-1 border-t border-border/20 flex flex-col gap-0.5">
+                    <div className="text-[12px] font-bold text-primary truncate leading-none">
                       {slot.subjectData.subject}
                     </div>
-                    <div className="flex justify-between items-center text-[9px] text-muted-foreground font-medium">
-                      <span>{slot.subjectData.teacher || "Geen Onnie"}</span>
-                      <span className="bg-muted px-1 rounded">{slot.subjectData.room || "N/A"}</span>
+                    <div className="flex justify-between items-center text-[9px] text-muted-foreground font-semibold leading-none">
+                      <span className="truncate max-w-[70%]">{slot.subjectData.teacher || "Geen Onnie"}</span>
+                      <span className="bg-muted px-1 rounded-sm shrink-0">{slot.subjectData.room || "N/A"}</span>
                     </div>
-                  </motion.div>
+                  </div>
                 )}
               </motion.div>
             ))}
