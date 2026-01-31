@@ -5,6 +5,12 @@ import html2canvas from 'html2canvas';
 import { useToast } from '@/hooks/use-toast';
 import badgeUrl from '@assets/Wesvalia_1-removebg-preview_1768752339288.png';
 
+interface UserSubject {
+  subject: string;
+  room: string;
+  teacher: string;
+}
+
 interface TimetableDisplayProps {
   startTime: string;
   pouseCount?: number;
@@ -12,6 +18,8 @@ interface TimetableDisplayProps {
   eindTyd?: string;
   periodCount?: number;
   breakAfter?: number;
+  userSubjects?: Record<string, UserSubject>;
+  currentDay?: number;
 }
 
 interface TimeSlot {
@@ -19,6 +27,7 @@ interface TimeSlot {
   start: string;
   end: string;
   isBreak?: boolean;
+  subjectData?: UserSubject;
 }
 
 export function TimetableDisplay({ 
@@ -27,7 +36,9 @@ export function TimetableDisplay({
   pouseDuur = 30, 
   eindTyd = "13:50",
   periodCount = 8,
-  breakAfter = 4
+  breakAfter = 4,
+  userSubjects = {},
+  currentDay = 1
 }: TimetableDisplayProps) {
   const { toast } = useToast();
   const cardRef = useRef<HTMLDivElement>(null);
@@ -42,13 +53,6 @@ export function TimetableDisplay({
       
       const WALK = 4 * 60;
       const BREAK_DURATION = pouseDuur * 60;
-      
-      // Total walking gaps:
-      // Always 8 walking gaps total (Start-P1, P1-P2, P2-P3, P3-P4, Pouse1-P5, P5-P6, P6-P7, P7-P8)
-      // Note: If 2 breaks, we distribute them. For now simple mapping:
-      // 0 breaks: all periods contiguous
-      // 1 break: after P4
-      // 2 breaks: after P3 and P6
       
       let breakDeductions = pouseCount * BREAK_DURATION;
       const totalDeductions = (periodCount * WALK) + breakDeductions;
@@ -85,10 +89,13 @@ export function TimetableDisplay({
       for (let i = 1; i <= periodCount; i++) {
         const pStart = currentSeconds;
         const pEnd = pStart + periodLengthSeconds;
+        const key = `day${currentDay}_p${i}`;
+        
         slots.push({
           period: `Periode ${i}`,
           start: formatTime(Math.round(pStart)),
           end: i === periodCount ? eindTyd : formatTime(Math.round(pEnd)),
+          subjectData: userSubjects[key]
         });
         currentSeconds = pEnd;
 
@@ -96,8 +103,6 @@ export function TimetableDisplay({
         if (pouseCount === 1 && i === breakAfter) {
           addBreak();
         } else if (pouseCount === 2) {
-          // If 2 breaks, we use breakAfter for the first one, 
-          // and try to space the second one logically if not specified
           const secondBreakAfter = Math.min(periodCount - 1, breakAfter + Math.floor((periodCount - breakAfter) / 2));
           if (i === breakAfter || i === secondBreakAfter) {
             addBreak();
@@ -222,22 +227,40 @@ export function TimetableDisplay({
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: idx * 0.05 }}
-                className={`flex justify-between items-center p-2 rounded-lg border w-full min-h-[40px] ${
+                className={`flex flex-col p-2 rounded-lg border w-full ${
                   slot.isBreak 
                     ? "bg-secondary/20 border-secondary/30" 
                     : "bg-white border-border/50 hover:border-primary/20"
                 }`}
               >
-                <div className="flex-1 flex items-center justify-center text-center">
-                  <span className={`text-sm font-medium leading-none ${slot.isBreak ? "text-secondary-foreground font-bold" : "text-foreground"}`}>
-                    {slot.period}
-                  </span>
-                </div>
-                <div className="flex-1 flex items-center justify-center text-center">
-                  <div className="font-mono text-xs font-semibold text-primary/80 bg-primary/5 px-1.5 py-1 rounded leading-none flex items-center justify-center min-w-[100px]">
-                    {slot.start} - {slot.end}
+                <div className="flex justify-between items-center w-full">
+                  <div className="flex-1 text-left">
+                    <span className={`text-sm font-medium leading-none ${slot.isBreak ? "text-secondary-foreground font-bold" : "text-foreground"}`}>
+                      {slot.period}
+                    </span>
+                  </div>
+                  <div className="flex-1 flex justify-end">
+                    <div className="font-mono text-[10px] font-semibold text-primary/80 bg-primary/5 px-1.5 py-1 rounded leading-none">
+                      {slot.start} - {slot.end}
+                    </div>
                   </div>
                 </div>
+
+                {!slot.isBreak && slot.subjectData?.subject && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="mt-2 pt-2 border-t border-border/30 flex flex-col gap-0.5"
+                  >
+                    <div className="text-xs font-bold text-primary truncate">
+                      {slot.subjectData.subject}
+                    </div>
+                    <div className="flex justify-between items-center text-[9px] text-muted-foreground font-medium">
+                      <span>{slot.subjectData.teacher || "Geen Onnie"}</span>
+                      <span className="bg-muted px-1 rounded">{slot.subjectData.room || "N/A"}</span>
+                    </div>
+                  </motion.div>
+                )}
               </motion.div>
             ))}
           </div>
