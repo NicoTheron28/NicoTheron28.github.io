@@ -187,73 +187,69 @@ export function TimetableDisplay({
   };
 
   return (
-    <div className="w-full max-w-md mx-auto space-y-6">
-      <div className="flex justify-center gap-4">
+    <div className="w-full max-w-sm mx-auto">
+      <div className="flex justify-center gap-3 mb-3">
         <button 
           onClick={handleDownload}
-          className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-full text-sm font-medium shadow-lg hover:shadow-xl transition-all active:scale-95"
+          className="flex items-center gap-1 px-3 py-1 bg-primary text-primary-foreground rounded-full text-[10px] font-bold shadow-sm hover:shadow transition-all active:scale-95"
         >
-          <Download className="w-4 h-4" />
+          <Download className="w-3 h-3" />
           Stoor
         </button>
         <button 
           onClick={handleShare}
-          className="flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-full text-sm font-medium shadow-lg hover:shadow-xl transition-all active:scale-95"
+          className="flex items-center gap-1 px-3 py-1 bg-secondary text-secondary-foreground rounded-full text-[10px] font-bold shadow-sm hover:shadow transition-all active:scale-95"
         >
-          <Share2 className="w-4 h-4" />
+          <Share2 className="w-3 h-3" />
           Deel
         </button>
       </div>
 
       <div 
         ref={cardRef}
-        className="bg-white p-4 md:p-6 rounded-3xl shadow-2xl border border-border relative overflow-hidden"
+        className="bg-white p-2.5 rounded-2xl shadow-lg border border-border relative overflow-hidden"
       >
-        {/* Decorative Background Elements */}
-        <div className="absolute -top-20 -right-20 w-40 h-40 bg-secondary/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-primary/5 rounded-full blur-3xl" />
-
         <div className="relative z-10">
-          <div className="flex flex-col items-center mb-4">
-            <img src={badgeUrl} alt="Wesvalia Badge" className="w-12 h-12 object-contain mb-2 drop-shadow-md" />
-            <h2 className="text-xl font-bold text-primary font-display">Wesvalia Kloktye</h2>
-            <p className="text-muted-foreground text-[10px] mt-0.5">Begin: {startTime} | Klaar: {eindTyd}</p>
+          <div className="flex flex-col items-center mb-1.5">
+            <img src={badgeUrl} alt="Wesvalia Badge" className="w-6 h-6 object-contain mb-0.5" />
+            <h2 className="text-base font-bold text-primary font-display leading-none">Wesvalia Kloktye</h2>
+            <p className="text-muted-foreground text-[8px] mt-0.5 tracking-tighter">Begin: {startTime} | Klaar: {eindTyd}</p>
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             {slots.map((slot, idx) => (
               <motion.div 
                 key={idx}
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * 0.05 }}
-                className={`flex flex-col p-1.5 rounded-lg border w-full leading-tight ${
+                transition={{ delay: idx * 0.02 }}
+                className={`flex flex-col p-1 rounded-md border w-full leading-none ${
                   slot.isBreak 
-                    ? "bg-secondary/20 border-secondary/30" 
-                    : "bg-white border-border/50 hover:border-primary/20"
+                    ? "bg-secondary/10 border-secondary/20" 
+                    : "bg-white border-border/30"
                 }`}
               >
-                <div className="flex justify-between items-center w-full gap-2">
+                <div className="flex justify-between items-center w-full gap-1.5">
                   <div className="flex-1 text-left">
-                    <span className={`text-[13px] font-bold leading-none ${slot.isBreak ? "text-secondary-foreground" : "text-foreground"}`}>
+                    <span className={`text-[11px] font-bold leading-none ${slot.isBreak ? "text-secondary-foreground" : "text-foreground"}`}>
                       {slot.period}
                     </span>
                   </div>
                   <div className="flex-shrink-0">
-                    <div className="font-mono text-[10px] font-bold text-primary/90 bg-primary/5 px-1 py-0.5 rounded leading-none">
+                    <div className="font-mono text-[9px] font-bold text-primary/80 bg-primary/5 px-1 py-0.5 rounded-[2px] leading-none">
                       {slot.start} - {slot.end}
                     </div>
                   </div>
                 </div>
 
                 {!slot.isBreak && slot.subjectData?.subject && (
-                  <div className="mt-1 pt-1 border-t border-border/20 flex flex-col gap-0.5">
-                    <div className="text-[12px] font-bold text-primary truncate leading-none">
+                  <div className="mt-0.5 pt-0.5 border-t border-border/10 flex flex-col gap-0.5">
+                    <div className="text-[10px] font-bold text-primary truncate leading-tight">
                       {slot.subjectData.subject}
                     </div>
-                    <div className="flex justify-between items-center text-[9px] text-muted-foreground font-semibold leading-none">
+                    <div className="flex justify-between items-center text-[7.5px] text-muted-foreground font-semibold leading-none">
                       <span className="truncate max-w-[70%]">{slot.subjectData.teacher || "Geen Onnie"}</span>
-                      <span className="bg-muted px-1 rounded-sm shrink-0">{slot.subjectData.room || "N/A"}</span>
+                      <span className="bg-muted/40 px-0.5 rounded-[1px] shrink-0">{slot.subjectData.room || "-"}</span>
                     </div>
                   </div>
                 )}
@@ -261,14 +257,11 @@ export function TimetableDisplay({
             ))}
           </div>
 
-          <div className="mt-4 pt-3 border-t border-dashed border-border flex justify-center">
-            <p className="text-xs font-medium text-muted-foreground">
-              Klaslengte: <span className="text-primary">{periodLength}</span>
+          <div className="mt-2 pt-1 border-t border-dotted border-border/40 flex justify-between items-center px-1">
+            <p className="text-[8px] font-bold text-muted-foreground">
+              Klas: <span className="text-primary">{periodLength}</span>
             </p>
-          </div>
-          
-          <div className="mt-4 text-center">
-            <p className="text-[8px] text-muted-foreground uppercase tracking-widest opacity-50">Wesvalia Hoërskool</p>
+            <p className="text-[6px] text-muted-foreground uppercase tracking-widest opacity-30 italic">Wesvalia Hoërskool</p>
           </div>
         </div>
       </div>
