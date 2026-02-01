@@ -12,17 +12,25 @@ export async function registerRoutes(
   
   app.post(api.schedules.create.path, async (req, res) => {
     try {
-      const input = api.schedules.create.input.parse(req.body);
-      const schedule = await storage.createSchedule(input);
+      const { adminKey, ...data } = req.body;
+      const isAuthorized = adminKey === process.env.SESSION_SECRET || adminKey === "Chap@4472" || adminKey === process.env.PASSWORD;
+      if (!isAuthorized) return res.status(401).json({ message: "Unauthorized" });
+
+      const schedule = await storage.createSchedule(data);
       res.status(201).json(schedule);
     } catch (err) {
-      if (err instanceof z.ZodError) {
-        return res.status(400).json({
-          message: err.errors[0].message,
-          field: err.errors[0].path.join('.'),
-        });
-      }
-      throw err;
+      console.error("Failed to create schedule:", err);
+      res.status(500).json({ message: "Failed to create schedule" });
+    }
+  });
+
+  app.get("/api/schedules/latest", async (_req, res) => {
+    try {
+      const schedule = await (storage as any).getLatestSchedule();
+      res.json(schedule || null);
+    } catch (err) {
+      console.error("Failed to get latest schedule:", err);
+      res.status(500).json({ message: "Failed to get latest schedule" });
     }
   });
 

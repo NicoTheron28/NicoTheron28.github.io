@@ -7,15 +7,23 @@ export interface IStorage {
   getMessage(): Promise<Message | undefined>;
   updateMessage(content: string): Promise<Message>;
   getSettings(): Promise<SchoolSettings>;
-  updateSettings(day: number): Promise<SchoolSettings>;
+  updateSettings(day: number, startTime?: string, endTime?: string, startPeriod?: number, endPeriod?: number): Promise<SchoolSettings>;
 }
 
 export class DatabaseStorage implements IStorage {
   async createSchedule(insertSchedule: InsertSchedule): Promise<Schedule> {
     const [schedule] = await db
       .insert(schedules)
-      .values(insertSchedule)
+      .values({
+        ...insertSchedule,
+        generatedAt: new Date().toISOString()
+      })
       .returning();
+    return schedule;
+  }
+
+  async getLatestSchedule(): Promise<Schedule | undefined> {
+    const [schedule] = await db.select().from(schedules).orderBy(desc(schedules.generatedAt)).limit(1);
     return schedule;
   }
 

@@ -45,29 +45,36 @@ export default function Home() {
     queryKey: ['/api/message'],
   });
 
+  const { data: latestSchedule } = useQuery<any>({
+    queryKey: ['/api/schedules/latest'],
+  });
+
   const currentDay = settings?.currentDay || 1;
 
   useEffect(() => {
-    if (settings?.startTime) {
-      setStartTime(settings.startTime);
+    const activeData = latestSchedule || settings;
+    if (activeData?.startTime) {
+      setStartTime(activeData.startTime);
     }
-    if (settings?.endTime) {
-      setEindTyd(settings.endTime);
+    if (activeData?.endTime) {
+      setEindTyd(activeData.endTime);
     }
-    if (settings?.startPeriod) {
-      setStartPeriod(settings.startPeriod);
+    if (activeData?.startPeriod || activeData?.start_period) {
+      const sp = activeData.startPeriod || activeData.start_period;
+      setStartPeriod(sp);
     }
-    if (settings?.endPeriod) {
-      const count = settings.endPeriod - (settings.startPeriod || 1) + 1;
+    if (activeData?.endPeriod || activeData?.end_period) {
+      const ep = activeData.endPeriod || activeData.end_period;
+      const sp = activeData.startPeriod || activeData.start_period || 1;
+      const count = ep - sp + 1;
       setPeriodCount(count);
-      setEndPeriod(settings.endPeriod);
+      setEndPeriod(ep);
       
-      // Adjust breakAfter if it's out of bounds for the new period count
       if (breakAfter > count) {
         setBreakAfter(Math.max(1, Math.floor(count / 2)));
       }
     }
-  }, [settings]);
+  }, [settings, latestSchedule]);
 
   const handleScrollDown = () => {
     calcSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
