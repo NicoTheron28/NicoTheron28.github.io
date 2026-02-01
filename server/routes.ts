@@ -10,30 +10,26 @@ export async function registerRoutes(
 ): Promise<Server> {
   // Define routes using app.get(), app.post(), etc.
   
-  app.post(api.schedules.create.path, async (req, res) => {
+  app.post("/api/set-schedule", async (req, res) => {
     try {
-      const { adminKey, startTime, endTime, scheduleDay, startPeriod, endPeriod } = req.body;
-      const isAuthorized = adminKey === process.env.SESSION_SECRET || adminKey === "Chap@4472" || adminKey === process.env.PASSWORD;
-      if (!isAuthorized) return res.status(401).json({ message: "Unauthorized" });
+      const scheduleDay = parseInt(req.query.schedule_day as string || req.body.schedule_day);
+      const periods = (req.query.periods as string) || req.body.periods;
+      
+      if (isNaN(scheduleDay) || !periods) {
+        return res.status(400).json({ message: "Missing schedule_day or periods" });
+      }
 
-      const schedule = await storage.createSchedule({
-        startTime,
-        endTime,
-        scheduleDay,
-        startPeriod,
-        endPeriod,
-        generatedAt: new Date().toISOString()
-      });
+      const schedule = await storage.createSchedule({ scheduleDay, periods });
       res.status(201).json(schedule);
     } catch (err) {
-      console.error("Failed to create schedule:", err);
-      res.status(500).json({ message: "Failed to create schedule" });
+      console.error("Failed to set schedule:", err);
+      res.status(500).json({ message: "Failed to set schedule" });
     }
   });
 
-  app.get("/api/schedules/latest", async (_req, res) => {
+  app.get("/api/get-latest-schedule", async (_req, res) => {
     try {
-      const schedule = await (storage as any).getLatestSchedule();
+      const schedule = await storage.getLatestSchedule();
       res.json(schedule || null);
     } catch (err) {
       console.error("Failed to get latest schedule:", err);

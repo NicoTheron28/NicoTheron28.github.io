@@ -11,24 +11,32 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  async createSchedule(insertSchedule: InsertSchedule): Promise<Schedule> {
-    const [schedule] = await db
-      .insert(schedules)
-      .values({
-        startTime: insertSchedule.startTime || "07:30",
-        endTime: insertSchedule.endTime || "13:50",
-        scheduleDay: insertSchedule.scheduleDay ?? 1,
-        startPeriod: insertSchedule.startPeriod ?? 1,
-        endPeriod: insertSchedule.endPeriod ?? 8,
-        generatedAt: new Date().toISOString()
-      })
-      .returning();
-    return schedule;
+  async createSchedule(insertSchedule: any): Promise<any> {
+    try {
+      const [schedule] = await db
+        .insert(schedules)
+        .values({
+          scheduleDay: insertSchedule.scheduleDay,
+          periods: insertSchedule.periods,
+          dayCreated: new Date().toISOString()
+        })
+        .returning();
+      return schedule;
+    } catch (err) {
+      console.error("Failed to insert into schedules table:", err);
+      // Fallback or re-throw
+      throw err;
+    }
   }
 
-  async getLatestSchedule(): Promise<Schedule | undefined> {
-    const [schedule] = await db.select().from(schedules).orderBy(desc(schedules.generatedAt)).limit(1);
-    return schedule;
+  async getLatestSchedule(): Promise<any | undefined> {
+    try {
+      const [schedule] = await db.select().from(schedules).orderBy(desc(schedules.dayCreated)).limit(1);
+      return schedule;
+    } catch (err) {
+      console.error("Failed to fetch from schedules table:", err);
+      return undefined;
+    }
   }
 
   async getMessage(): Promise<Message | undefined> {

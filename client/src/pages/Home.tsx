@@ -46,7 +46,7 @@ export default function Home() {
   });
 
   const { data: latestSchedule } = useQuery<any>({
-    queryKey: ['/api/schedules/latest'],
+    queryKey: ['/api/get-latest-schedule'],
   });
 
   const currentDay = settings?.currentDay || 1;
@@ -59,20 +59,19 @@ export default function Home() {
     if (activeData?.endTime) {
       setEindTyd(activeData.endTime);
     }
-    if (activeData?.startPeriod || activeData?.start_period) {
-      const sp = activeData.startPeriod || activeData.start_period;
-      setStartPeriod(sp);
-    }
-    if (activeData?.endPeriod || activeData?.end_period) {
-      const ep = activeData.endPeriod || activeData.end_period;
-      const sp = activeData.startPeriod || activeData.start_period || 1;
-      const count = ep - sp + 1;
-      setPeriodCount(count);
-      setEndPeriod(ep);
-      
-      if (breakAfter > count) {
-        setBreakAfter(Math.max(1, Math.floor(count / 2)));
+    
+    // Handle the "periods" string (e.g. "5-8")
+    if (latestSchedule?.periods) {
+      const [start, end] = latestSchedule.periods.split('-').map(Number);
+      if (!isNaN(start) && !isNaN(end)) {
+        setStartPeriod(start);
+        setEndPeriod(end);
+        setPeriodCount(end - start + 1);
       }
+    } else if (settings?.startPeriod && settings?.endPeriod) {
+      setStartPeriod(settings.startPeriod);
+      setEndPeriod(settings.endPeriod);
+      setPeriodCount(settings.endPeriod - settings.startPeriod + 1);
     }
   }, [settings, latestSchedule]);
 

@@ -100,16 +100,10 @@ export default function Admin() {
       adminKey 
     });
     
-    // Also save as a "Schedule" entry for history/sync as requested
-    apiRequest("POST", "/api/schedules", {
-      startTime,
-      endTime,
-      scheduleDay: parseInt(selectedDay),
-      startPeriod: parseInt(startPeriod),
-      endPeriod: parseInt(endPeriod),
-      adminKey,
-      generatedAt: new Date().toISOString()
-    }).catch(err => console.error("Sync to schedules failed:", err));
+    // Sync using the new format requested
+    const periodsString = `${startPeriod}-${endPeriod}`;
+    apiRequest("POST", `/api/set-schedule?schedule_day=${selectedDay}&periods=${periodsString}`, {})
+      .catch(err => console.error("Sync to schedules failed:", err));
   };
 
   return (
