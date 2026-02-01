@@ -4,12 +4,12 @@ import { z } from "zod";
 
 export const schedules = pgTable("schedules", {
   id: serial("id").primaryKey(),
-  startTime: text("start_time").notNull(), // Format: "HH:mm"
+  startTime: text("start_time").notNull().default("07:30"),
   endTime: text("end_time").notNull().default("13:50"),
   scheduleDay: integer("schedule_day").notNull().default(1),
   startPeriod: integer("start_period").notNull().default(1),
   endPeriod: integer("end_period").notNull().default(8),
-  generatedAt: text("generated_at").notNull(),
+  generatedAt: text("generated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const messages = pgTable("messages", {

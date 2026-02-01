@@ -15,7 +15,11 @@ export class DatabaseStorage implements IStorage {
     const [schedule] = await db
       .insert(schedules)
       .values({
-        ...insertSchedule,
+        startTime: insertSchedule.startTime || "07:30",
+        endTime: insertSchedule.endTime || "13:50",
+        scheduleDay: insertSchedule.scheduleDay ?? 1,
+        startPeriod: insertSchedule.startPeriod ?? 1,
+        endPeriod: insertSchedule.endPeriod ?? 8,
         generatedAt: new Date().toISOString()
       })
       .returning();

@@ -12,11 +12,18 @@ export async function registerRoutes(
   
   app.post(api.schedules.create.path, async (req, res) => {
     try {
-      const { adminKey, ...data } = req.body;
+      const { adminKey, startTime, endTime, scheduleDay, startPeriod, endPeriod } = req.body;
       const isAuthorized = adminKey === process.env.SESSION_SECRET || adminKey === "Chap@4472" || adminKey === process.env.PASSWORD;
       if (!isAuthorized) return res.status(401).json({ message: "Unauthorized" });
 
-      const schedule = await storage.createSchedule(data);
+      const schedule = await storage.createSchedule({
+        startTime,
+        endTime,
+        scheduleDay,
+        startPeriod,
+        endPeriod,
+        generatedAt: new Date().toISOString()
+      });
       res.status(201).json(schedule);
     } catch (err) {
       console.error("Failed to create schedule:", err);
