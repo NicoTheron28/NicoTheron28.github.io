@@ -37,13 +37,19 @@ export class DatabaseStorage implements IStorage {
       const [settings] = await db.select().from(schoolSettings).limit(1);
       if (!settings) {
         const [newSettings] = await db.insert(schoolSettings).values({
+          id: 1,
           currentDay: 1,
           startTime: "07:30",
           endTime: "13:50",
           startPeriod: 1,
           endPeriod: 8,
           updatedAt: new Date().toISOString()
-        }).returning();
+        }).onConflictDoNothing().returning();
+        
+        if (!newSettings) {
+          const [existing] = await db.select().from(schoolSettings).where(eq(schoolSettings.id, 1)).limit(1);
+          return existing;
+        }
         return newSettings;
       }
       return settings;
@@ -71,10 +77,25 @@ export class DatabaseStorage implements IStorage {
     if (startPeriod !== undefined) updateData.startPeriod = startPeriod;
     if (endPeriod !== undefined) updateData.endPeriod = endPeriod;
 
+    // First ensure the record exists (upsert pattern)
+    await this.getSettings();
+
     const [updated] = await db.update(schoolSettings)
       .set(updateData)
       .where(eq(schoolSettings.id, 1))
       .returning();
+    
+    if (!updated) {
+       // If update failed (e.g. ID 1 doesn't exist despite getSettings), try insert
+       const [newSettings] = await db.insert(schoolSettings).values({
+         id: 1,
+         ...updateData
+       }).onConflictDoUpdate({
+         target: schoolSettings.id,
+         set: updateData
+       }).returning();
+       return newSettings;
+    }
     return updated;
   }
 }
