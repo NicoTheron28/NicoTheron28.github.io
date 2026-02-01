@@ -31,6 +31,16 @@ export async function registerRoutes(
     res.json(message || { content: "" });
   });
 
+  app.get("/api/settings", async (_req, res) => {
+    try {
+      const settings = await storage.getSettings();
+      res.json(settings);
+    } catch (err) {
+      console.error("Failed to get settings:", err);
+      res.status(500).json({ message: "Failed to get settings" });
+    }
+  });
+
   app.post("/api/settings", async (req, res) => {
     const { day, adminKey } = req.body;
     const isAuthorized = adminKey === process.env.SESSION_SECRET || adminKey === "Chap@4472" || adminKey === process.env.PASSWORD;
