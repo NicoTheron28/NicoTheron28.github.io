@@ -1,6 +1,6 @@
 import { db } from "./db";
 import { insertScheduleSchema, schedules, messages, schoolSettings, type Schedule, type InsertSchedule, type Message, type InsertMessage, type SchoolSettings } from "@shared/schema";
-import { desc } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 
 export interface IStorage {
   createSchedule(schedule: InsertSchedule): Promise<Schedule>;
@@ -54,11 +54,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateSettings(day: number): Promise<SchoolSettings> {
-    const existing = await this.getSettings();
-    const [updated] = await db.insert(schoolSettings).values({
-      currentDay: day,
-      updatedAt: new Date().toISOString()
-    }).returning();
+    const [updated] = await db.update(schoolSettings)
+      .set({
+        currentDay: day,
+        updatedAt: new Date().toISOString()
+      })
+      .where(eq(schoolSettings.id, 1))
+      .returning();
     return updated;
   }
 }
