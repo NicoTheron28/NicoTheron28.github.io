@@ -14,19 +14,24 @@ export default function Admin() {
   const [adminKey, setAdminKey] = useState("");
   const [content, setContent] = useState("");
   const [selectedDay, setSelectedDay] = useState<string>("1");
+  const [startTime, setStartTime] = useState("07:30");
+  const [endTime, setEndTime] = useState("13:50");
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const { toast } = useToast();
 
   const { data: motd } = useQuery<{ content: string }>({
     queryKey: ['/api/message'],
   });
 
-  const { data: settings } = useQuery<{ currentDay: number }>({
+  const { data: settings } = useQuery<{ currentDay: number, startTime: string, endTime: string }>({
     queryKey: ['/api/settings'],
   });
 
   useEffect(() => {
     if (settings) {
       setSelectedDay(settings.currentDay.toString());
+      setStartTime(settings.startTime || "07:30");
+      setEndTime(settings.endTime || "13:50");
     }
   }, [settings]);
 
@@ -55,7 +60,7 @@ export default function Admin() {
   });
 
   const settingsMutation = useMutation({
-    mutationFn: async (data: { day: number; adminKey: string }) => {
+    mutationFn: async (data: { day: number; startTime: string; endTime: string; adminKey: string }) => {
       const res = await apiRequest("POST", "/api/settings", data);
       return res.json();
     },
@@ -63,7 +68,7 @@ export default function Admin() {
       queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
       toast({
         title: "Sukses!",
-        description: `Skool-dag opgedateer na Dag ${selectedDay}.`,
+        description: `Skool-dag en tye opgedateer.`,
       });
     },
     onError: () => {
@@ -82,7 +87,12 @@ export default function Admin() {
 
   const handleUpdateDay = (e: React.FormEvent) => {
     e.preventDefault();
-    settingsMutation.mutate({ day: parseInt(selectedDay), adminKey });
+    settingsMutation.mutate({ 
+      day: parseInt(selectedDay), 
+      startTime, 
+      endTime, 
+      adminKey 
+    });
   };
 
   return (
@@ -131,13 +141,60 @@ export default function Admin() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Advanced Settings Toggle */}
+              <div className="pt-2">
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setShowAdvanced(!showAdvanced)}
+                  className="text-xs text-muted-foreground hover:text-primary"
+                >
+                  {showAdvanced ? "Versteek gevorderde stellings" : "Wys gevorderde stellings"}
+                </Button>
+              </div>
+
+              {showAdvanced && (
+                <motion.div 
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  className="space-y-4 overflow-hidden pt-2"
+                >
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                        Begin Tyd
+                      </label>
+                      <Input 
+                        type="time" 
+                        value={startTime} 
+                        onChange={(e) => setStartTime(e.target.value)}
+                        className="bg-muted/50"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                        Einde Tyd
+                      </label>
+                      <Input 
+                        type="time" 
+                        value={endTime} 
+                        onChange={(e) => setEndTime(e.target.value)}
+                        className="bg-muted/50"
+                      />
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
               <Button
                 type="submit"
                 variant="outline"
                 className="w-full border-primary text-primary hover:bg-primary hover:text-gold"
                 disabled={settingsMutation.isPending}
               >
-                {settingsMutation.isPending ? "Besig..." : "Opdateer Skool-dag"}
+                {settingsMutation.isPending ? "Besig..." : "Opdateer Skool-dag & Stellings"}
               </Button>
             </form>
 

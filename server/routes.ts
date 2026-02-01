@@ -42,11 +42,11 @@ export async function registerRoutes(
   });
 
   app.post("/api/settings", async (req, res) => {
-    const { day, adminKey } = req.body;
+    const { day, startTime, endTime, adminKey } = req.body;
     const isAuthorized = adminKey === process.env.SESSION_SECRET || adminKey === "Chap@4472" || adminKey === process.env.PASSWORD;
     if (!isAuthorized) return res.status(401).json({ message: "Unauthorized" });
     try {
-      const settings = await storage.updateSettings(day);
+      const settings = await storage.updateSettings(day, startTime, endTime);
       res.json(settings);
     } catch (err) {
       console.error("Failed to update settings:", err);

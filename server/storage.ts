@@ -38,6 +38,8 @@ export class DatabaseStorage implements IStorage {
       if (!settings) {
         const [newSettings] = await db.insert(schoolSettings).values({
           currentDay: 1,
+          startTime: "07:30",
+          endTime: "13:50",
           updatedAt: new Date().toISOString()
         }).returning();
         return newSettings;
@@ -48,17 +50,23 @@ export class DatabaseStorage implements IStorage {
       return {
         id: 1,
         currentDay: 1,
+        startTime: "07:30",
+        endTime: "13:50",
         updatedAt: new Date().toISOString()
       };
     }
   }
 
-  async updateSettings(day: number): Promise<SchoolSettings> {
+  async updateSettings(day: number, startTime?: string, endTime?: string): Promise<SchoolSettings> {
+    const updateData: any = {
+      currentDay: day,
+      updatedAt: new Date().toISOString()
+    };
+    if (startTime) updateData.startTime = startTime;
+    if (endTime) updateData.endTime = endTime;
+
     const [updated] = await db.update(schoolSettings)
-      .set({
-        currentDay: day,
-        updatedAt: new Date().toISOString()
-      })
+      .set(updateData)
       .where(eq(schoolSettings.id, 1))
       .returning();
     return updated;

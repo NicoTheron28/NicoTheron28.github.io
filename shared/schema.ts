@@ -17,6 +17,8 @@ export const messages = pgTable("messages", {
 export const schoolSettings = pgTable("school_settings", {
   id: serial("id").primaryKey(),
   currentDay: integer("current_day").notNull().default(1), // 1-6
+  startTime: text("start_time").notNull().default("07:30"),
+  endTime: text("end_time").notNull().default("13:50"),
   updatedAt: text("updated_at").notNull(),
 });
 
