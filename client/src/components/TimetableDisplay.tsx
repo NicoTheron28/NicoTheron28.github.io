@@ -7,8 +7,7 @@ import badgeUrl from '@assets/Wesvalia_1-removebg-preview_1768752339288.png';
 
 interface UserSubject {
   subject: string;
-  room: string;
-  teacher: string;
+  color?: string;
 }
 
 interface TimetableDisplayProps {
@@ -223,15 +222,19 @@ export function TimetableDisplay({
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: idx * 0.02 }}
-                className={`flex flex-col p-1 rounded-md border w-full leading-none ${
+                className={`flex flex-col p-1 rounded-md border w-full leading-none transition-colors ${
                   slot.isBreak 
                     ? "bg-secondary/10 border-secondary/20" 
-                    : "bg-white border-border/30"
+                    : "border-border/30"
                 }`}
+                style={!slot.isBreak && slot.subjectData?.color ? { backgroundColor: `${slot.subjectData.color}20`, borderColor: slot.subjectData.color } : {}}
               >
                 <div className="flex justify-between items-center w-full gap-1.5">
                   <div className="flex-1 text-left">
-                    <span className={`text-[11px] font-bold leading-none ${slot.isBreak ? "text-secondary-foreground" : "text-foreground"}`}>
+                    <span 
+                      className={`text-[11px] font-bold leading-none ${slot.isBreak ? "text-secondary-foreground" : "text-foreground"}`}
+                      style={!slot.isBreak && slot.subjectData?.color ? { color: slot.subjectData.color === '#FFFFFF' || slot.subjectData.color === '#Swart' ? undefined : slot.subjectData.color } : {}}
+                    >
                       {slot.period}
                     </span>
                   </div>
@@ -244,12 +247,11 @@ export function TimetableDisplay({
 
                 {!slot.isBreak && slot.subjectData?.subject && (
                   <div className="mt-0.5 pt-0.5 border-t border-border/10 flex flex-col gap-0.5">
-                    <div className="text-[10px] font-bold text-primary truncate leading-tight">
+                    <div 
+                      className="text-[10px] font-bold text-primary truncate leading-tight"
+                      style={slot.subjectData.color ? { color: slot.subjectData.color === '#FFFFFF' ? undefined : slot.subjectData.color } : {}}
+                    >
                       {slot.subjectData.subject}
-                    </div>
-                    <div className="flex justify-between items-center text-[7.5px] text-muted-foreground font-semibold leading-none">
-                      <span className="truncate max-w-[70%]">{slot.subjectData.teacher || "Geen Onnie"}</span>
-                      <span className="bg-muted/40 px-0.5 rounded-[1px] shrink-0">{slot.subjectData.room || "-"}</span>
                     </div>
                   </div>
                 )}

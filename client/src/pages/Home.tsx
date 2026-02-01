@@ -30,8 +30,8 @@ export default function Home() {
   const [eindTyd, setEindTyd] = useState("13:50");
 
   // User Subjects (Stored in LocalStorage)
-  const [userSubjects, setUserSubjects] = useState<Record<string, UserSubject>>(() => {
-    const saved = localStorage.getItem('wesvalia_user_subjects');
+  const [userSubjects, setUserSubjects] = useState<Record<string, any>>(() => {
+    const saved = localStorage.getItem('wesvalia_user_subjects_v2');
     return saved ? JSON.parse(saved) : {};
   });
 
@@ -71,10 +71,17 @@ export default function Home() {
           <motion.div
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="fixed top-0 left-0 right-0 z-[100] bg-primary text-primary-foreground py-2 px-4 shadow-md flex items-center justify-center gap-3"
+            className="fixed top-0 left-0 right-0 z-[100] bg-primary text-primary-foreground py-2 px-4 shadow-md flex items-center justify-between gap-3"
           >
-            <Bell className="w-4 h-4 text-gold animate-bounce" />
-            <p className="text-sm font-medium">{motd.content}</p>
+            <div className="flex items-center gap-3 justify-center flex-1">
+              <Bell className="w-4 h-4 text-gold animate-bounce" />
+              <p className="text-sm font-medium">{motd.content}</p>
+            </div>
+            <Link href="/vakke">
+              <Button variant="ghost" size="icon" className="rounded-full text-gold hover:bg-white/10 shrink-0">
+                <BookOpen className="w-5 h-5" />
+              </Button>
+            </Link>
           </motion.div>
         )}
       </AnimatePresence>
