@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "wouter";
 import { TimePicker } from "@/components/ScrollWheel";
 import { TimetableDisplay } from "@/components/TimetableDisplay";
 import { Settings2, BookOpen, ChevronDown, X, Eye, EyeOff, Bell, Minus, Plus } from "lucide-react";
@@ -18,7 +19,6 @@ export default function Home() {
   const [startTime, setStartTime] = useState("07:30");
   const [isCalculated, setIsCalculated] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [isSubjectsOpen, setIsSubjectsOpen] = useState(false);
   const [showClassDetails, setShowClassDetails] = useState(true);
   const calcSectionRef = useRef<HTMLDivElement>(null);
   
@@ -30,7 +30,7 @@ export default function Home() {
   const [eindTyd, setEindTyd] = useState("13:50");
 
   // User Subjects (Stored in LocalStorage)
-  const [userSubjects, setUserSubjects] = useState<Record<string, any>>(() => {
+  const [userSubjects] = useState<Record<string, any>>(() => {
     const saved = localStorage.getItem('wesvalia_user_subjects_v2');
     return saved ? JSON.parse(saved) : {};
   });
@@ -44,21 +44,6 @@ export default function Home() {
   });
 
   const currentDay = settings?.currentDay || 1;
-
-  useEffect(() => {
-    localStorage.setItem('wesvalia_user_subjects', JSON.stringify(userSubjects));
-  }, [userSubjects]);
-
-  const handleSubjectChange = (period: number, field: keyof UserSubject, value: string) => {
-    const key = `day${currentDay}_p${period}`;
-    setUserSubjects(prev => ({
-      ...prev,
-      [key]: {
-        ...(prev[key] || { subject: "", room: "", teacher: "" }),
-        [field]: value
-      }
-    }));
-  };
 
   const handleScrollDown = () => {
     calcSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -128,14 +113,6 @@ export default function Home() {
             <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
               Vandag is <span className="text-primary">Dag {currentDay}</span>
             </p>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => setIsSubjectsOpen(true)}
-              className="rounded-full hover:bg-primary/10 text-primary"
-            >
-              <BookOpen className="w-5 h-5" />
-            </Button>
           </div>
 
           <AnimatePresence mode="wait">
@@ -323,82 +300,6 @@ export default function Home() {
         </motion.div>
       </section>
 
-      {/* Subjects Modal */}
-      <AnimatePresence>
-        {isSubjectsOpen && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-4"
-          >
-            <motion.div 
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              className="bg-white w-full max-w-md rounded-t-[2.5rem] sm:rounded-[2.5rem] p-6 max-h-[85vh] overflow-y-auto shadow-2xl"
-            >
-              <div className="flex justify-between items-center mb-6 sticky top-0 bg-white pb-2 z-10">
-                <div>
-                  <h3 className="text-xl font-bold text-primary">My Vakke - Dag {currentDay}</h3>
-                  <p className="text-xs text-muted-foreground">Vul jou vakbesonderhede hier in</p>
-                </div>
-                <Button variant="ghost" size="icon" onClick={() => setIsSubjectsOpen(false)}>
-                  <X className="w-5 h-5" />
-                </Button>
-              </div>
-
-              <div className="space-y-4">
-                {Array.from({ length: periodCount }).map((_, i) => {
-                  const pNum = i + 1;
-                  const key = `day${currentDay}_p${pNum}`;
-                  const data = userSubjects[key] || { subject: "", room: "", teacher: "" };
-                  
-                  return (
-                    <div key={pNum} className="p-4 rounded-2xl bg-muted/30 border border-border/50 space-y-3">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="w-6 h-6 rounded-full bg-primary text-gold text-[10px] flex items-center justify-center font-bold">
-                          {pNum}
-                        </span>
-                        <h4 className="text-sm font-bold text-foreground">Periode {pNum}</h4>
-                      </div>
-                      <div className="grid grid-cols-1 gap-2">
-                        <Input 
-                          placeholder="Vak (bv. Wiskunde)" 
-                          value={data.subject}
-                          onChange={(e) => handleSubjectChange(pNum, 'subject', e.target.value)}
-                          className="bg-white border-none shadow-sm h-10"
-                        />
-                        <div className="grid grid-cols-2 gap-2">
-                          <Input 
-                            placeholder="Klas (bv. B1)" 
-                            value={data.room}
-                            onChange={(e) => handleSubjectChange(pNum, 'room', e.target.value)}
-                            className="bg-white border-none shadow-sm h-10"
-                          />
-                          <Input 
-                            placeholder="Onderwyser" 
-                            value={data.teacher}
-                            onChange={(e) => handleSubjectChange(pNum, 'teacher', e.target.value)}
-                            className="bg-white border-none shadow-sm h-10"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <Button 
-                onClick={() => setIsSubjectsOpen(false)}
-                className="w-full mt-8 h-14 rounded-2xl bg-primary text-gold font-bold text-lg shadow-lg"
-              >
-                Klaar
-              </Button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

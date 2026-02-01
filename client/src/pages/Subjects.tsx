@@ -15,7 +15,21 @@ const SUBJECTS_LIST = [
   "Ekonomie",
   "Kuns",
   "Musiek",
-  "IT"
+  "IT",
+  "EBW",
+  "Sosiale Wetenskappe",
+  "Natuurwetenskappe",
+  "Tegnologie",
+  "Rekeningkunde",
+  "Besigheidstudies",
+  "Toerisme",
+  "Verbruikerstudies",
+  "Ingenieurswese Grafika en Ontwerp",
+  "Landbouwetenskappe",
+  "Gasvryheidstudies",
+  "Drama",
+  "Geografie",
+  "Geskiedenis"
 ];
 
 const COLORS = [
