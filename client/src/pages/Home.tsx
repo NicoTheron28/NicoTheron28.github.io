@@ -35,7 +35,7 @@ export default function Home() {
     return saved ? JSON.parse(saved) : {};
   });
 
-  const { data: settings } = useQuery<{ currentDay: number }>({
+  const { data: settings } = useQuery<{ currentDay: number, startTime: string, endTime: string }>({
     queryKey: ['/api/settings'],
   });
 
@@ -44,6 +44,15 @@ export default function Home() {
   });
 
   const currentDay = settings?.currentDay || 1;
+
+  useEffect(() => {
+    if (settings?.startTime) {
+      setStartTime(settings.startTime);
+    }
+    if (settings?.endTime) {
+      setEindTyd(settings.endTime);
+    }
+  }, [settings]);
 
   const handleScrollDown = () => {
     calcSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
