@@ -40,6 +40,8 @@ export class DatabaseStorage implements IStorage {
           currentDay: 1,
           startTime: "07:30",
           endTime: "13:50",
+          startPeriod: 1,
+          endPeriod: 8,
           updatedAt: new Date().toISOString()
         }).returning();
         return newSettings;
@@ -52,18 +54,22 @@ export class DatabaseStorage implements IStorage {
         currentDay: 1,
         startTime: "07:30",
         endTime: "13:50",
+        startPeriod: 1,
+        endPeriod: 8,
         updatedAt: new Date().toISOString()
       };
     }
   }
 
-  async updateSettings(day: number, startTime?: string, endTime?: string): Promise<SchoolSettings> {
+  async updateSettings(day: number, startTime?: string, endTime?: string, startPeriod?: number, endPeriod?: number): Promise<SchoolSettings> {
     const updateData: any = {
       currentDay: day,
       updatedAt: new Date().toISOString()
     };
     if (startTime) updateData.startTime = startTime;
     if (endTime) updateData.endTime = endTime;
+    if (startPeriod !== undefined) updateData.startPeriod = startPeriod;
+    if (endPeriod !== undefined) updateData.endPeriod = endPeriod;
 
     const [updated] = await db.update(schoolSettings)
       .set(updateData)

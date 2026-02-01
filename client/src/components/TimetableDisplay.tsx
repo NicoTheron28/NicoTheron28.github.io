@@ -19,6 +19,7 @@ interface TimetableDisplayProps {
   breakAfter?: number;
   userSubjects?: Record<string, UserSubject>;
   currentDay?: number;
+  startPeriodOffset?: number;
 }
 
 interface TimeSlot {
@@ -37,7 +38,8 @@ export function TimetableDisplay({
   periodCount = 8,
   breakAfter = 4,
   userSubjects = {},
-  currentDay = 1
+  currentDay = 1,
+  startPeriodOffset = 1
 }: TimetableDisplayProps) {
   const { toast } = useToast();
   const cardRef = useRef<HTMLDivElement>(null);
@@ -86,12 +88,13 @@ export function TimetableDisplay({
       };
 
       for (let i = 1; i <= periodCount; i++) {
+        const actualPeriodNumber = startPeriodOffset + i - 1;
         const pStart = currentSeconds;
         const pEnd = pStart + periodLengthSeconds;
-        const key = `day${currentDay}_p${i}`;
+        const key = `day${currentDay}_p${actualPeriodNumber}`;
         
         slots.push({
-          period: `Periode ${i}`,
+          period: `Periode ${actualPeriodNumber}`,
           start: formatTime(Math.round(pStart)),
           end: i === periodCount ? eindTyd : formatTime(Math.round(pEnd)),
           subjectData: userSubjects[key]

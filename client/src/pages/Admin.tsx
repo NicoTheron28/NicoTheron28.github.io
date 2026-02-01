@@ -16,6 +16,8 @@ export default function Admin() {
   const [selectedDay, setSelectedDay] = useState<string>("1");
   const [startTime, setStartTime] = useState("07:30");
   const [endTime, setEndTime] = useState("13:50");
+  const [startPeriod, setStartPeriod] = useState<string>("1");
+  const [endPeriod, setEndPeriod] = useState<string>("8");
   const [showAdvanced, setShowAdvanced] = useState(false);
   const { toast } = useToast();
 
@@ -23,7 +25,7 @@ export default function Admin() {
     queryKey: ['/api/message'],
   });
 
-  const { data: settings } = useQuery<{ currentDay: number, startTime: string, endTime: string }>({
+  const { data: settings } = useQuery<{ currentDay: number, startTime: string, endTime: string, startPeriod: number, endPeriod: number }>({
     queryKey: ['/api/settings'],
   });
 
@@ -32,6 +34,8 @@ export default function Admin() {
       setSelectedDay(settings.currentDay.toString());
       setStartTime(settings.startTime || "07:30");
       setEndTime(settings.endTime || "13:50");
+      setStartPeriod((settings.startPeriod || 1).toString());
+      setEndPeriod((settings.endPeriod || 8).toString());
     }
   }, [settings]);
 
@@ -60,7 +64,7 @@ export default function Admin() {
   });
 
   const settingsMutation = useMutation({
-    mutationFn: async (data: { day: number; startTime: string; endTime: string; adminKey: string }) => {
+    mutationFn: async (data: { day: number; startTime: string; endTime: string; startPeriod: number; endPeriod: number; adminKey: string }) => {
       const res = await apiRequest("POST", "/api/settings", data);
       return res.json();
     },
@@ -91,6 +95,8 @@ export default function Admin() {
       day: parseInt(selectedDay), 
       startTime, 
       endTime, 
+      startPeriod: parseInt(startPeriod),
+      endPeriod: parseInt(endPeriod),
       adminKey 
     });
   };
@@ -161,6 +167,43 @@ export default function Admin() {
                   animate={{ height: "auto", opacity: 1 }}
                   className="space-y-4 overflow-hidden pt-2"
                 >
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                        Begin Periode
+                      </label>
+                      <Select value={startPeriod} onValueChange={setStartPeriod}>
+                        <SelectTrigger className="bg-muted/50">
+                          <SelectValue placeholder="Begin" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {[1, 2, 3, 4, 5, 6, 7, 8].map((p) => (
+                            <SelectItem key={p} value={p.toString()}>
+                              Periode {p}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                        Einde Periode
+                      </label>
+                      <Select value={endPeriod} onValueChange={setEndPeriod}>
+                        <SelectTrigger className="bg-muted/50">
+                          <SelectValue placeholder="Einde" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {[1, 2, 3, 4, 5, 6, 7, 8].map((p) => (
+                            <SelectItem key={p} value={p.toString()}>
+                              Periode {p}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">

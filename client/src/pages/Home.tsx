@@ -28,6 +28,8 @@ export default function Home() {
   const [pouseDuur, setPouseDuur] = useState(30);
   const [breakAfter, setBreakAfter] = useState(4);
   const [eindTyd, setEindTyd] = useState("13:50");
+  const [startPeriod, setStartPeriod] = useState(1);
+  const [endPeriod, setEndPeriod] = useState(8);
 
   // User Subjects (Stored in LocalStorage)
   const [userSubjects] = useState<Record<string, any>>(() => {
@@ -35,7 +37,7 @@ export default function Home() {
     return saved ? JSON.parse(saved) : {};
   });
 
-  const { data: settings } = useQuery<{ currentDay: number, startTime: string, endTime: string }>({
+  const { data: settings } = useQuery<{ currentDay: number, startTime: string, endTime: string, startPeriod: number, endPeriod: number }>({
     queryKey: ['/api/settings'],
   });
 
@@ -51,6 +53,19 @@ export default function Home() {
     }
     if (settings?.endTime) {
       setEindTyd(settings.endTime);
+    }
+    if (settings?.startPeriod) {
+      setStartPeriod(settings.startPeriod);
+    }
+    if (settings?.endPeriod) {
+      const count = settings.endPeriod - (settings.startPeriod || 1) + 1;
+      setPeriodCount(count);
+      setEndPeriod(settings.endPeriod);
+      
+      // Adjust breakAfter if it's out of bounds for the new period count
+      if (breakAfter > count) {
+        setBreakAfter(Math.max(1, Math.floor(count / 2)));
+      }
     }
   }, [settings]);
 
@@ -302,6 +317,7 @@ export default function Home() {
                   eindTyd={eindTyd}
                   userSubjects={showClassDetails ? userSubjects : {}}
                   currentDay={currentDay}
+                  startPeriodOffset={startPeriod}
                 />
               </motion.div>
             )}
