@@ -77,26 +77,21 @@ export class DatabaseStorage implements IStorage {
     if (startPeriod !== undefined) updateData.startPeriod = startPeriod;
     if (endPeriod !== undefined) updateData.endPeriod = endPeriod;
 
-    // First ensure the record exists (upsert pattern)
-    await this.getSettings();
-
-    const [updated] = await db.update(schoolSettings)
-      .set(updateData)
-      .where(eq(schoolSettings.id, 1))
-      .returning();
-    
-    if (!updated) {
-       // If update failed (e.g. ID 1 doesn't exist despite getSettings), try insert
-       const [newSettings] = await db.insert(schoolSettings).values({
-         id: 1,
-         ...updateData
-       }).onConflictDoUpdate({
-         target: schoolSettings.id,
-         set: updateData
-       }).returning();
-       return newSettings;
+    try {
+      // Direct upsert with onConflictDoUpdate
+      const [settings] = await db.insert(schoolSettings).values({
+        id: 1,
+        ...updateData
+      }).onConflictDoUpdate({
+        target: schoolSettings.id,
+        set: updateData
+      }).returning();
+      
+      return settings;
+    } catch (err) {
+      console.error("Failed to update settings in database:", err);
+      throw err;
     }
-    return updated;
   }
 }
 
