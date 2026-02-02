@@ -3,10 +3,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "wouter";
 import { TimePicker } from "@/components/ScrollWheel";
 import { TimetableDisplay } from "@/components/TimetableDisplay";
-import { Settings2, BookOpen, ChevronDown, X, Eye, EyeOff, Bell, Minus, Plus } from "lucide-react";
+import { Settings2, BookOpen, ChevronDown, Eye, EyeOff, Bell, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
 
 interface UserSubject {
@@ -41,6 +40,8 @@ export default function Home() {
     queryKey: ['/api/settings'],
   });
 
+  const [localDay, setLocalDay] = useState<number>(1);
+
   const { data: motd } = useQuery<{ content: string }>({
     queryKey: ['/api/message'],
   });
@@ -49,7 +50,11 @@ export default function Home() {
     queryKey: ['/api/get-latest-schedule'],
   });
 
-  const currentDay = settings?.currentDay || 1;
+  useEffect(() => {
+    if (settings?.currentDay) {
+      setLocalDay(settings.currentDay);
+    }
+  }, [settings]);
 
   useEffect(() => {
     const activeData = latestSchedule || settings;
@@ -140,9 +145,23 @@ export default function Home() {
           className="w-full max-w-md"
         >
           <div className="flex justify-between items-center mb-4 px-2">
-            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-              Vandag is <span className="text-primary">Dag {currentDay}</span>
-            </p>
+            <div className="flex items-center gap-4">
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                Vandag is
+              </p>
+              <Select value={localDay.toString()} onValueChange={(v) => setLocalDay(parseInt(v))}>
+                <SelectTrigger className="h-7 w-24 bg-primary/10 border-none text-primary font-bold text-xs uppercase tracking-widest">
+                  <SelectValue placeholder="Dag" />
+                </SelectTrigger>
+                <SelectContent>
+                  {[1, 2, 3, 4, 5, 6].map((day) => (
+                    <SelectItem key={day} value={day.toString()} className="text-xs uppercase tracking-widest">
+                      Dag {day}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <AnimatePresence mode="wait">
@@ -322,7 +341,7 @@ export default function Home() {
                   breakAfter={breakAfter}
                   eindTyd={eindTyd}
                   userSubjects={showClassDetails ? userSubjects : {}}
-                  currentDay={currentDay}
+                  currentDay={localDay}
                   startPeriodOffset={startPeriod}
                 />
               </motion.div>
