@@ -26,11 +26,13 @@ const SUBJECTS_LIST = [
   "Rekeningkunde",
   "Ekonomie",
   "Besigheidstudie",
-  "Toerisme"
+  "Toerisme",
+  "LO",
+  "LO Sport"
 ];
 
 const COLORS = [
-  { name: "Maroon", value: "#800000" },
+  { name: "Pers", value: "#800080" },
   { name: "Goud", value: "#FFD700" },
   { name: "Swart", value: "#000000" },
   { name: "Wit", value: "#FFFFFF" },

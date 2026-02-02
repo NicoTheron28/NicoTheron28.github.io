@@ -243,7 +243,9 @@ export function TimetableDisplay({
                   <div className="flex-1 text-left">
                     <span 
                       className={`text-[11px] font-bold leading-none ${slot.isBreak ? "text-secondary-foreground" : "text-foreground"}`}
-                      style={!slot.isBreak && slot.subjectData?.color ? { color: slot.subjectData.color === '#FFFFFF' || slot.subjectData.color === '#Swart' ? undefined : slot.subjectData.color } : {}}
+                      style={!slot.isBreak && slot.subjectData?.color ? { 
+                        color: (slot.subjectData.color.toUpperCase() === '#FFFFFF') ? '#000000' : slot.subjectData.color 
+                      } : {}}
                     >
                       {slot.period}
                     </span>
@@ -259,7 +261,9 @@ export function TimetableDisplay({
                   <div className="mt-0.5 pt-0.5 border-t border-border/10 flex flex-col gap-0.5">
                     <div 
                       className="text-[10px] font-bold text-primary truncate leading-tight"
-                      style={slot.subjectData.color ? { color: slot.subjectData.color === '#FFFFFF' ? undefined : slot.subjectData.color } : {}}
+                      style={slot.subjectData.color ? { 
+                        color: (slot.subjectData.color.toUpperCase() === '#FFFFFF') ? '#000000' : slot.subjectData.color 
+                      } : {}}
                     >
                       {slot.subjectData.subject}
                     </div>
