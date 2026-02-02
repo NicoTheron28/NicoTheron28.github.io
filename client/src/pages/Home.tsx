@@ -221,6 +221,25 @@ export default function Home() {
                         </div>
 
                         <div className="space-y-2">
+                          <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Begin Periode</label>
+                          <div className="flex items-center justify-between bg-muted/50 rounded-lg p-1">
+                            <button 
+                              onClick={() => setStartPeriod(Math.max(1, startPeriod - 1))}
+                              className="p-2 hover:bg-white rounded-md transition-colors"
+                            >
+                              <Minus className="w-4 h-4" />
+                            </button>
+                            <span className="font-display font-bold text-primary">Periode {startPeriod}</span>
+                            <button 
+                              onClick={() => setStartPeriod(Math.min(12, startPeriod + 1))}
+                              className="p-2 hover:bg-white rounded-md transition-colors"
+                            >
+                              <Plus className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
                           <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Aantal Periodes</label>
                           <div className="flex items-center justify-between bg-muted/50 rounded-lg p-1">
                             <button 
