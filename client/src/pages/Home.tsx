@@ -282,7 +282,7 @@ export default function Home() {
                                 </button>
                                 <span className="font-display font-bold text-primary">{breakAfter}</span>
                                 <button 
-                                  onClick={() => setBreakAfter(Math.min(periodCount - 1, breakAfter + 1))}
+                                  onClick={() => setBreakAfter(Math.min(8, breakAfter + 1))}
                                   className="p-2 hover:bg-white rounded-md transition-colors"
                                 >
                                   <Plus className="w-4 h-4" />
