@@ -88,7 +88,14 @@ export function TimetableDisplay({
       };
 
       for (let i = 1; i <= periodCount; i++) {
-        const actualPeriodNumber = startPeriodOffset + i - 1;
+        let actualPeriodNumber = startPeriodOffset + i - 1;
+        // Reset to 1 if it exceeds 12 (or 8 depending on logic, but user said 8/12 reset to 1)
+        // Standard school day is usually 8 periods, but some go to 12.
+        // If start is 5 and there are 8 periods, it goes 5,6,7,8,1,2,3,4.
+        if (actualPeriodNumber > 8) {
+          actualPeriodNumber = ((actualPeriodNumber - 1) % 8) + 1;
+        }
+        
         const pStart = currentSeconds;
         const pEnd = pStart + periodLengthSeconds;
         const key = `day${currentDay}_p${actualPeriodNumber}`;
