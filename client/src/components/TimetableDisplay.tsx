@@ -102,11 +102,11 @@ export function TimetableDisplay({
         currentSeconds = pEnd;
 
         // Break logic
-        if (pouseCount === 1 && i === breakAfter) {
+        if (pouseCount === 1 && actualPeriodNumber === breakAfter) {
           addBreak();
         } else if (pouseCount === 2) {
-          const secondBreakAfter = Math.min(periodCount - 1, breakAfter + Math.floor((periodCount - breakAfter) / 2));
-          if (i === breakAfter || i === secondBreakAfter) {
+          const secondBreakAfter = Math.min(12, breakAfter + 2); // Simple heuristic for 2nd break
+          if (actualPeriodNumber === breakAfter || actualPeriodNumber === secondBreakAfter) {
             addBreak();
           } else if (i < periodCount) {
             currentSeconds += WALK;
