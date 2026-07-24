@@ -282,10 +282,14 @@ export default function Admin() {
                 <Textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder={motd?.content || "Tik die nuwe boodskap hier..."}
+                  placeholder="Tik 'n boodskap, of laat leeg om geen boodskap te wys nie..."
                   className="min-h-[100px] bg-muted/50"
-                  required
                 />
+                {motd?.content && (
+                  <p className="text-xs text-muted-foreground">
+                    Huidige boodskap: <span className="font-medium text-foreground">"{motd.content}"</span>
+                  </p>
+                )}
               </div>
               <Button
                 type="submit"
@@ -295,7 +299,7 @@ export default function Admin() {
                 {messageMutation.isPending ? "Besig..." : (
                   <>
                     <Save className="w-4 h-4 mr-2" />
-                    Opdateer Boodskap
+                    {content.trim() ? "Opdateer Boodskap" : "Verwyder Boodskap"}
                   </>
                 )}
               </Button>
