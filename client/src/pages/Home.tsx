@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "wouter";
 import { TimePicker } from "@/components/ScrollWheel";
 import { TimetableDisplay } from "@/components/TimetableDisplay";
+import { TimetableSkeleton } from "@/components/TimetableSkeleton";
 import { Settings2, BookOpen, ChevronDown, Eye, EyeOff, Bell, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
