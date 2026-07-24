@@ -10,5 +10,6 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const connectionString = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL;
+export const pool = new Pool({ connectionString });
 export const db = drizzle(pool, { schema });
