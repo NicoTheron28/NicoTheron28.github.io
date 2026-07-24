@@ -128,9 +128,9 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background pb-20 overflow-x-hidden">
 
-      {/* MOTD Banner — hides on scroll down */}
+      {/* Header — always visible, hides on scroll down */}
       <AnimatePresence>
-        {motd?.content && navbarVisible && (
+        {navbarVisible && (
           <motion.div
             key="navbar"
             initial={{ y: -50, opacity: 0 }}
@@ -139,9 +139,13 @@ export default function Home() {
             transition={{ duration: 0.25 }}
             className="fixed top-0 left-0 right-0 z-[100] bg-primary text-primary-foreground py-2 px-4 shadow-md flex items-center justify-between gap-3"
           >
-            <div className="flex items-center gap-3 justify-center flex-1">
-              <Bell className="w-4 h-4 text-gold animate-bounce" />
-              <p className="text-sm font-medium">{motd.content}</p>
+            <div className="flex items-center gap-3 flex-1">
+              {motd?.content && (
+                <>
+                  <Bell className="w-4 h-4 text-gold animate-bounce shrink-0" />
+                  <p className="text-sm font-medium">{motd.content}</p>
+                </>
+              )}
             </div>
             <Link href="/vakke">
               <Button variant="ghost" size="icon" className="rounded-full text-gold hover:bg-white/10 shrink-0">
@@ -237,7 +241,7 @@ export default function Home() {
               onClick={handleScrollToManual}
               className="text-xs text-muted-foreground hover:text-primary underline decoration-dotted underline-offset-4 transition-colors uppercase tracking-widest"
             >
-              Handmatig Bereken ↓
+              Manual Settings ↓
             </button>
           </div>
         </motion.div>
