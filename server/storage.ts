@@ -7,7 +7,7 @@ export interface IStorage {
   getMessage(): Promise<Message | undefined>;
   updateMessage(content: string): Promise<Message>;
   getSettings(): Promise<SchoolSettings>;
-  updateSettings(day: number, startTime?: string, endTime?: string, startPeriod?: number, endPeriod?: number): Promise<SchoolSettings>;
+  updateSettings(day: number, startTime?: string, endTime?: string, startPeriod?: number, endPeriod?: number, pouseCount?: number, pouseDuur?: number, breakAfter?: number): Promise<SchoolSettings>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -24,7 +24,6 @@ export class DatabaseStorage implements IStorage {
       return schedule;
     } catch (err) {
       console.error("Failed to insert into schedules table:", err);
-      // Fallback or re-throw
       throw err;
     }
   }
@@ -63,6 +62,9 @@ export class DatabaseStorage implements IStorage {
           endTime: "13:50",
           startPeriod: 1,
           endPeriod: 8,
+          pouseCount: 1,
+          pouseDuur: 30,
+          breakAfter: 4,
           updatedAt: new Date().toISOString()
         }).onConflictDoNothing().returning();
         
@@ -82,12 +84,15 @@ export class DatabaseStorage implements IStorage {
         endTime: "13:50",
         startPeriod: 1,
         endPeriod: 8,
+        pouseCount: 1,
+        pouseDuur: 30,
+        breakAfter: 4,
         updatedAt: new Date().toISOString()
       };
     }
   }
 
-  async updateSettings(day: number, startTime?: string, endTime?: string, startPeriod?: number, endPeriod?: number): Promise<SchoolSettings> {
+  async updateSettings(day: number, startTime?: string, endTime?: string, startPeriod?: number, endPeriod?: number, pouseCount?: number, pouseDuur?: number, breakAfter?: number): Promise<SchoolSettings> {
     const updateData: any = {
       currentDay: day,
       updatedAt: new Date().toISOString()
@@ -96,9 +101,11 @@ export class DatabaseStorage implements IStorage {
     if (endTime) updateData.endTime = endTime;
     if (startPeriod !== undefined) updateData.startPeriod = startPeriod;
     if (endPeriod !== undefined) updateData.endPeriod = endPeriod;
+    if (pouseCount !== undefined) updateData.pouseCount = pouseCount;
+    if (pouseDuur !== undefined) updateData.pouseDuur = pouseDuur;
+    if (breakAfter !== undefined) updateData.breakAfter = breakAfter;
 
     try {
-      // Direct upsert with onConflictDoUpdate
       const [settings] = await db.insert(schoolSettings).values({
         id: 1,
         ...updateData

@@ -14,21 +14,52 @@ interface UserSubject {
   teacher: string;
 }
 
+interface Settings {
+  currentDay: number;
+  startTime: string;
+  endTime: string;
+  startPeriod: number;
+  endPeriod: number;
+  pouseCount: number;
+  pouseDuur: number;
+  breakAfter: number;
+}
+
 export default function Home() {
   const [startTime, setStartTime] = useState("07:30");
   const [isCalculated, setIsCalculated] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showClassDetails, setShowClassDetails] = useState(true);
-  const calcSectionRef = useRef<HTMLDivElement>(null);
-  
-  // Timetable Settings
+  const [showAutoDetails, setShowAutoDetails] = useState(true);
+  const autoSectionRef = useRef<HTMLDivElement>(null);
+  const manualSectionRef = useRef<HTMLDivElement>(null);
+
+  // Timetable Settings (manual)
   const [periodCount, setPeriodCount] = useState(8);
   const [pouseCount, setPouseCount] = useState(1);
   const [pouseDuur, setPouseDuur] = useState(30);
   const [breakAfter, setBreakAfter] = useState(4);
   const [eindTyd, setEindTyd] = useState("13:50");
   const [startPeriod, setStartPeriod] = useState(1);
-  const [endPeriod, setEndPeriod] = useState(8);
+  const [localDay, setLocalDay] = useState<number>(1);
+
+  // Navbar hide on scroll down
+  const [navbarVisible, setNavbarVisible] = useState(true);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      if (currentY > lastScrollY.current && currentY > 60) {
+        setNavbarVisible(false);
+      } else {
+        setNavbarVisible(true);
+      }
+      lastScrollY.current = currentY;
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // User Subjects (Stored in LocalStorage)
   const [userSubjects] = useState<Record<string, any>>(() => {
@@ -36,11 +67,9 @@ export default function Home() {
     return saved ? JSON.parse(saved) : {};
   });
 
-  const { data: settings } = useQuery<{ currentDay: number, startTime: string, endTime: string, startPeriod: number, endPeriod: number }>({
+  const { data: settings } = useQuery<Settings>({
     queryKey: ['/api/settings'],
   });
-
-  const [localDay, setLocalDay] = useState<number>(1);
 
   const { data: motd } = useQuery<{ content: string }>({
     queryKey: ['/api/message'],
@@ -58,39 +87,56 @@ export default function Home() {
 
   useEffect(() => {
     const activeData = latestSchedule || settings;
-    if (activeData?.startTime) {
-      setStartTime(activeData.startTime);
-    }
-    if (activeData?.endTime) {
-      setEindTyd(activeData.endTime);
-    }
-    
-    // Handle the "periods" string (e.g. "5-8")
+    if (activeData?.startTime) setStartTime(activeData.startTime);
+    if (activeData?.endTime) setEindTyd(activeData.endTime);
+
     if (latestSchedule?.periods) {
       const [start, end] = latestSchedule.periods.split('-').map(Number);
       if (!isNaN(start) && !isNaN(end)) {
         setStartPeriod(start);
-        setEndPeriod(end);
         setPeriodCount(end - start + 1);
       }
     } else if (settings?.startPeriod && settings?.endPeriod) {
       setStartPeriod(settings.startPeriod);
-      setEndPeriod(settings.endPeriod);
       setPeriodCount(settings.endPeriod - settings.startPeriod + 1);
     }
+
+    if (settings?.pouseCount !== undefined) setPouseCount(settings.pouseCount);
+    if (settings?.pouseDuur !== undefined) setPouseDuur(settings.pouseDuur);
+    if (settings?.breakAfter !== undefined) setBreakAfter(settings.breakAfter);
   }, [settings, latestSchedule]);
 
-  const handleScrollDown = () => {
-    calcSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+  // Derived auto-section values from settings
+  const autoDay = settings?.currentDay ?? 1;
+  const autoStartTime = settings?.startTime ?? "07:30";
+  const autoEindTyd = settings?.endTime ?? "13:50";
+  const autoStartPeriod = settings?.startPeriod ?? 1;
+  const autoEndPeriod = settings?.endPeriod ?? 8;
+  const autoPeriodCount = autoEndPeriod - autoStartPeriod + 1;
+  const autoPouseCount = settings?.pouseCount ?? 1;
+  const autoPouseDuur = settings?.pouseDuur ?? 30;
+  const autoBreakAfter = settings?.breakAfter ?? 4;
+
+  const handleScrollToAuto = () => {
+    autoSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleScrollToManual = () => {
+    manualSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
     <div className="min-h-screen bg-background pb-20 overflow-x-hidden">
+
+      {/* MOTD Banner — hides on scroll down */}
       <AnimatePresence>
-        {motd?.content && (
+        {motd?.content && navbarVisible && (
           <motion.div
+            key="navbar"
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -50, opacity: 0 }}
+            transition={{ duration: 0.25 }}
             className="fixed top-0 left-0 right-0 z-[100] bg-primary text-primary-foreground py-2 px-4 shadow-md flex items-center justify-between gap-3"
           >
             <div className="flex items-center gap-3 justify-center flex-1">
@@ -106,8 +152,9 @@ export default function Home() {
         )}
       </AnimatePresence>
 
+      {/* HERO SECTION */}
       <section className="h-screen flex flex-col items-center justify-center py-12 px-4 relative">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8 }}
@@ -121,21 +168,85 @@ export default function Home() {
           </h1>
         </motion.div>
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1, y: [0, 10, 0] }}
           transition={{ duration: 2, repeat: Infinity, delay: 1 }}
-          onClick={handleScrollDown}
+          onClick={handleScrollToAuto}
           className="cursor-pointer flex flex-col items-center gap-2 mb-8 text-muted-foreground hover:text-primary transition-colors absolute bottom-12"
         >
           <span className="text-xs uppercase tracking-widest font-medium">Begin</span>
           <ChevronDown className="w-6 h-6" />
         </motion.div>
       </section>
-      
-      <section 
-        ref={calcSectionRef}
-        className="min-h-screen py-12 px-4 bg-muted/30 flex flex-col items-center justify-start pt-24"
+
+      {/* AUTOMATIC SECTION */}
+      <section
+        ref={autoSectionRef}
+        className="min-h-screen py-12 px-4 bg-muted/30 flex flex-col items-center justify-start pt-16"
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="w-full max-w-md"
+        >
+          {/* Header */}
+          <div className="flex justify-between items-center mb-6 px-2">
+            <div className="flex items-center gap-3">
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                Vandag —
+              </p>
+              <span className="text-xs font-bold uppercase tracking-widest text-primary bg-primary/10 px-3 py-1 rounded-full">
+                Dag {autoDay}
+              </span>
+            </div>
+            <button
+              onClick={() => setShowAutoDetails(!showAutoDetails)}
+              className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1.5 transition-colors"
+            >
+              {showAutoDetails ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              {showAutoDetails ? "Versteek" : "Wys"}
+            </button>
+          </div>
+
+          {/* Auto timetable — always shown, no calculate button */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="w-full"
+          >
+            <TimetableDisplay
+              startTime={autoStartTime}
+              periodCount={autoPeriodCount}
+              pouseCount={autoPouseCount}
+              pouseDuur={autoPouseDuur}
+              breakAfter={autoBreakAfter}
+              eindTyd={autoEindTyd}
+              userSubjects={showAutoDetails ? userSubjects : {}}
+              currentDay={autoDay}
+              startPeriodOffset={autoStartPeriod}
+            />
+          </motion.div>
+
+          {/* Link to manual section */}
+          <div className="mt-8 text-center">
+            <button
+              onClick={handleScrollToManual}
+              className="text-xs text-muted-foreground hover:text-primary underline decoration-dotted underline-offset-4 transition-colors uppercase tracking-widest"
+            >
+              Handmatig Bereken ↓
+            </button>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* MANUAL SECTION */}
+      <section
+        ref={manualSectionRef}
+        className="min-h-screen py-12 px-4 flex flex-col items-center justify-start pt-16"
       >
         <motion.div
           initial={{ opacity: 0, y: 50 }}
@@ -145,10 +256,11 @@ export default function Home() {
           className="w-full max-w-md"
         >
           <div className="flex justify-between items-center mb-4 px-2">
-            <div className="flex items-center gap-4">
-              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                Vandag is
-              </p>
+            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+              Handmatig
+            </p>
+            <div className="flex items-center gap-3">
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Dag</p>
               <Select value={localDay.toString()} onValueChange={(v) => setLocalDay(parseInt(v))}>
                 <SelectTrigger className="h-7 w-24 bg-primary/10 border-none text-primary font-bold text-xs uppercase tracking-widest">
                   <SelectValue placeholder="Dag" />
@@ -178,9 +290,9 @@ export default function Home() {
                 </div>
 
                 <div className="py-4">
-                  <TimePicker 
-                    initialTime={startTime} 
-                    onTimeChange={setStartTime} 
+                  <TimePicker
+                    initialTime={startTime}
+                    onTimeChange={setStartTime}
                   />
                 </div>
 
@@ -204,17 +316,11 @@ export default function Home() {
                         <div className="space-y-2">
                           <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Aantal Pouses</label>
                           <div className="flex items-center justify-between bg-muted/50 rounded-lg p-1">
-                            <button 
-                              onClick={() => setPouseCount(Math.max(0, pouseCount - 1))}
-                              className="p-2 hover:bg-white rounded-md transition-colors"
-                            >
+                            <button onClick={() => setPouseCount(Math.max(0, pouseCount - 1))} className="p-2 hover:bg-white rounded-md transition-colors">
                               <Minus className="w-4 h-4" />
                             </button>
                             <span className="font-display font-bold text-primary">{pouseCount}</span>
-                            <button 
-                              onClick={() => setPouseCount(Math.min(2, pouseCount + 1))}
-                              className="p-2 hover:bg-white rounded-md transition-colors"
-                            >
+                            <button onClick={() => setPouseCount(Math.min(2, pouseCount + 1))} className="p-2 hover:bg-white rounded-md transition-colors">
                               <Plus className="w-4 h-4" />
                             </button>
                           </div>
@@ -223,17 +329,11 @@ export default function Home() {
                         <div className="space-y-2">
                           <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Begin Periode</label>
                           <div className="flex items-center justify-between bg-muted/50 rounded-lg p-1">
-                            <button 
-                              onClick={() => setStartPeriod(Math.max(1, startPeriod - 1))}
-                              className="p-2 hover:bg-white rounded-md transition-colors"
-                            >
+                            <button onClick={() => setStartPeriod(Math.max(1, startPeriod - 1))} className="p-2 hover:bg-white rounded-md transition-colors">
                               <Minus className="w-4 h-4" />
                             </button>
                             <span className="font-display font-bold text-primary">Periode {startPeriod}</span>
-                            <button 
-                              onClick={() => setStartPeriod(Math.min(12, startPeriod + 1))}
-                              className="p-2 hover:bg-white rounded-md transition-colors"
-                            >
+                            <button onClick={() => setStartPeriod(Math.min(12, startPeriod + 1))} className="p-2 hover:bg-white rounded-md transition-colors">
                               <Plus className="w-4 h-4" />
                             </button>
                           </div>
@@ -242,7 +342,7 @@ export default function Home() {
                         <div className="space-y-2">
                           <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Aantal Periodes</label>
                           <div className="flex items-center justify-between bg-muted/50 rounded-lg p-1">
-                            <button 
+                            <button
                               onClick={() => {
                                 const newCount = Math.max(1, periodCount - 1);
                                 setPeriodCount(newCount);
@@ -253,10 +353,7 @@ export default function Home() {
                               <Minus className="w-4 h-4" />
                             </button>
                             <span className="font-display font-bold text-primary">{periodCount}</span>
-                            <button 
-                              onClick={() => setPeriodCount(Math.min(12, periodCount + 1))}
-                              className="p-2 hover:bg-white rounded-md transition-colors"
-                            >
+                            <button onClick={() => setPeriodCount(Math.min(12, periodCount + 1))} className="p-2 hover:bg-white rounded-md transition-colors">
                               <Plus className="w-4 h-4" />
                             </button>
                           </div>
@@ -274,17 +371,11 @@ export default function Home() {
                                 {pouseCount === 1 ? "Pouse na periode" : "Eerste pouse na periode"}
                               </label>
                               <div className="flex items-center justify-between bg-muted/50 rounded-lg p-1">
-                                <button 
-                                  onClick={() => setBreakAfter(Math.max(1, breakAfter - 1))}
-                                  className="p-2 hover:bg-white rounded-md transition-colors"
-                                >
+                                <button onClick={() => setBreakAfter(Math.max(1, breakAfter - 1))} className="p-2 hover:bg-white rounded-md transition-colors">
                                   <Minus className="w-4 h-4" />
                                 </button>
                                 <span className="font-display font-bold text-primary">{breakAfter}</span>
-                                <button 
-                                  onClick={() => setBreakAfter(Math.min(8, breakAfter + 1))}
-                                  className="p-2 hover:bg-white rounded-md transition-colors"
-                                >
+                                <button onClick={() => setBreakAfter(Math.min(8, breakAfter + 1))} className="p-2 hover:bg-white rounded-md transition-colors">
                                   <Plus className="w-4 h-4" />
                                 </button>
                               </div>
@@ -297,7 +388,7 @@ export default function Home() {
                             <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Duur van Pouse</label>
                             <span className="text-sm font-display font-bold text-primary">{pouseDuur} min</span>
                           </div>
-                          <input 
+                          <input
                             type="range" min="15" max="60" step="5"
                             value={pouseDuur}
                             onChange={(e) => setPouseDuur(parseInt(e.target.value))}
@@ -308,7 +399,7 @@ export default function Home() {
                         <div className="space-y-2">
                           <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Eintyd v Dag</label>
                           <div className="flex justify-center">
-                            <input 
+                            <input
                               type="time"
                               value={eindTyd}
                               onChange={(e) => setEindTyd(e.target.value)}
@@ -337,13 +428,13 @@ export default function Home() {
                 className="w-full space-y-6"
               >
                 <div className="flex justify-center gap-4">
-                  <button 
+                  <button
                     onClick={() => setIsCalculated(false)}
                     className="text-sm text-muted-foreground hover:text-primary underline decoration-dotted underline-offset-4"
                   >
                     Verander Stellings
                   </button>
-                  <button 
+                  <button
                     onClick={() => setShowClassDetails(!showClassDetails)}
                     className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1.5"
                   >
@@ -352,8 +443,8 @@ export default function Home() {
                   </button>
                 </div>
 
-                <TimetableDisplay 
-                  startTime={startTime} 
+                <TimetableDisplay
+                  startTime={startTime}
                   periodCount={periodCount}
                   pouseCount={pouseCount}
                   pouseDuur={pouseDuur}

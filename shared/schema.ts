@@ -22,6 +22,9 @@ export const schoolSettings = pgTable("school_settings", {
   endTime: text("end_time").notNull().default("13:50"),
   startPeriod: integer("start_period").notNull().default(1),
   endPeriod: integer("end_period").notNull().default(8),
+  pouseCount: integer("pouse_count").notNull().default(1),
+  pouseDuur: integer("pouse_duur").notNull().default(30),
+  breakAfter: integer("break_after").notNull().default(4),
   updatedAt: text("updated_at").notNull(),
 });
 

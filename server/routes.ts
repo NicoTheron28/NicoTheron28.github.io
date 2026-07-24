@@ -53,11 +53,11 @@ export async function registerRoutes(
   });
 
   app.post("/api/settings", async (req, res) => {
-    const { day, startTime, endTime, startPeriod, endPeriod, adminKey } = req.body;
+    const { day, startTime, endTime, startPeriod, endPeriod, pouseCount, pouseDuur, breakAfter, adminKey } = req.body;
     const isAuthorized = adminKey === process.env.SESSION_SECRET || adminKey === "Chap@4472" || adminKey === process.env.PASSWORD;
     if (!isAuthorized) return res.status(401).json({ message: "Unauthorized" });
     try {
-      const settings = await storage.updateSettings(day, startTime, endTime, startPeriod, endPeriod);
+      const settings = await storage.updateSettings(day, startTime, endTime, startPeriod, endPeriod, pouseCount, pouseDuur, breakAfter);
       res.json(settings);
     } catch (err) {
       console.error("Failed to update settings:", err);
