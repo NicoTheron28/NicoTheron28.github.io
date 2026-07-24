@@ -261,7 +261,7 @@ export default function Home() {
         >
           <div className="flex justify-between items-center mb-4 px-2">
             <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-              Handmatig
+              Manual
             </p>
             <div className="flex items-center gap-3">
               <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Dag</p>
